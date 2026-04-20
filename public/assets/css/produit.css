@@ -1,0 +1,103 @@
+.dev{
+    padding: 20px;
+    margin:  10px;
+   
+}
+.bg-#AF2B1D {
+background-color: #AF2B1D;
+}
+.butt{
+right: -75%; 
+}
+
+.hover\:bg-darker-#AF2B1D {
+--hover-bg-color: #9F2519;
+}
+.container {
+display: flex;
+justify-content: flex-end;
+}
+
+
+.sidebar {
+flex: 0 0 200px; /* Sets a fixed width for sidebar */
+}
+
+.content-area {
+flex: 1; /* Makes content area fill remaining space */
+}
+
+
+
+table {
+width: 130%; /* Adjust width as needed */
+border-collapse: collapse;
+box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+
+.table-pop-out {
+border-collapse: collapse; /* Collapse borders */
+border-spacing: 0;
+}
+
+/* Remove vertical borders from th and td elements */
+.table-pop-out th,
+.table-pop-out td {
+padding: 10px; /* Add padding */
+border-top: 1px solid #ddd; /* Add border only to the top */
+border-bottom: 1px solid #ddd; /* Add border only to the bottom */
+}
+
+/* Apply box shadow for the pop-out effect */
+.table-pop-out th,
+.table-pop-out td {
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Adjust shadow as needed */
+}
+
+/* Add a slight transition for a smooth effect */
+.table-pop-out th,
+.table-pop-out td {
+transition: box-shadow 0.3s ease;
+}
+
+/* Adjust the shadow when hovering over a table row */
+.table-pop-out tr:hover th,
+.table-pop-out tr:hover td {
+box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Increase shadow on hover */
+}
+
+
+
+.create-button {
+
+top: 100px; /* Adjust the distance from the top of the viewport */
+right: 20px; /* Adjust the distance from the right side of the viewport */
+padding: 10px 20px; /* Add padding to the button */
+background-color: #AF2B1D; /* Button background color */
+color: white; /* Text color */
+border: none; /* Remove border */
+border-radius: 5px; /* Add rounded corners */
+cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+.create-button:hover {
+    background-color: #D73C2A; /* Darker background color on hover */
+}
+
+
+.button-button {
+/* Position the button relative to the viewport */
+padding: 10px 20px; /* Add padding to the button */
+background-color: white; /* Button background color */
+color: black; /* Text color */
+border-radius: 5px; /* Add rounded corners */
+cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+
+
+.layout-navbar {
+justify-content: flex-end; /* Align navbar content to the right */
+}
+
