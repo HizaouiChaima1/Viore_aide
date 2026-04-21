@@ -51,7 +51,7 @@
     </style>
 </head>
 <body>
-   @include('admin.sidebar')
+   @include('admin.sidebar_partial')
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
       @include('admin.nav')

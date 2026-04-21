@@ -214,9 +214,11 @@
                             <span>Rôle</span><span style="color: red;">*</span> <i class="fas fa-exclamation-circle"></i></label>
                            <select id="rolee" name="Rôle" class="form-select">
                          <option value="{{$employe->Rôle}}" >{{$employe->Rôle}}</option>
+                         <option value="admin">Admin</option>
                          <option value="Cassier">Cassier</option>
                         <option value="Cuisinier">Cuisinier</option>
                          <option value="Serveur">Serveur</option>
+                         <option value="client">Client</option>
                            </select>                  
                           </div>
                           <div class="mb-3">

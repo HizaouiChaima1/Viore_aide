@@ -4,11 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EmployeRequest;
 use App\Models\Employe;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\EmployeRegistered;
+use App\Contracts\NotificationServiceInterface;
+use App\Services\MenuService;
 use Illuminate\Support\Facades\Auth;
+
 class EmployeeController extends Controller
-{public function store(EmployeRequest $request)
+{
+    /**
+     * SOLID: Dependency Inversion Principle (DIP)
+     * 
+     * Le contrôleur dépend des abstractions (NotificationServiceInterface)
+     * et du service (MenuService) plutôt que d'implémentations concrètes.
+     */
+    private NotificationServiceInterface $notificationService;
+    private MenuService $menuService;
+
+    public function __construct(
+        NotificationServiceInterface $notificationService,
+        MenuService $menuService
+    ) {
+        $this->notificationService = $notificationService;
+        $this->menuService = $menuService;
+    }
+
+    public function store(EmployeRequest $request)
     {
         // Validation des données du formulaire
         $request->validate([
@@ -32,12 +51,12 @@ class EmployeeController extends Controller
             'pays' => $request->input('pays'),
         ]);
     
-        // Envoi de l'e-mail
-        Mail::to($employe->Email)->send(new EmployeRegistered(
+        // SOLID DIP: utiliser le service de notification injecté
+        $this->notificationService->sendEmployeeRegistrationEmail(
             $employe->Email,
             $request->input('password'), // Assurez-vous de ne pas envoyer le mot de passe haché
             $employe->Rôle
-        ));
+        );
     
         // Retour ou redirection après l'enregistrement
         return back()->with('success', 'Employé enregistré et email envoyé.');
@@ -45,14 +64,40 @@ class EmployeeController extends Controller
     
     public function index()
     {
-        $Employe = Employe::all();
+        $currentUser = Auth::guard('employee')->user();
+        $Employe = Employe::where('nomrestau', $currentUser->nomrestau)
+                          ->where(function($query) use ($currentUser) {
+                              $query->where('Rôle', '!=', 'admin')
+                                    ->orWhere('id', $currentUser->id);
+                          })
+                          ->get();
         return view('admin.role', compact('Employe'));
     }
 
     public function affichemploye (){
-        $Employes= Employe::withTrashed()->get();
-        $deletedemp= Employe::onlyTrashed()->get();
-        $tousemp = Employe::whereNull('deleted_at')->get();
+        $currentUser = Auth::guard('employee')->user();
+        $nomrestau = $currentUser->nomrestau;
+        $Employes= Employe::withTrashed()
+                          ->where('nomrestau', $nomrestau)
+                          ->where(function($query) use ($currentUser) {
+                              $query->where('Rôle', '!=', 'admin')
+                                    ->orWhere('id', $currentUser->id);
+                          })
+                          ->get();
+        $deletedemp= Employe::onlyTrashed()
+                            ->where('nomrestau', $nomrestau)
+                            ->where(function($query) use ($currentUser) {
+                                $query->where('Rôle', '!=', 'admin')
+                                      ->orWhere('id', $currentUser->id);
+                            })
+                            ->get();
+        $tousemp = Employe::whereNull('deleted_at')
+                          ->where('nomrestau', $nomrestau)
+                          ->where(function($query) use ($currentUser) {
+                              $query->where('Rôle', '!=', 'admin')
+                                    ->orWhere('id', $currentUser->id);
+                          })
+                          ->get();
         return view ('admin.ajout', compact('Employes','deletedemp','tousemp'));  
     }
 
@@ -67,38 +112,38 @@ class EmployeeController extends Controller
     public function supemploye($id)
     {
         $employe= Employe::findOrFail($id);
-        $employe->delete();
+        // GoF: Facade — délègue au MenuService
+        $this->menuService->softDelete($employe);
         return view('admin.detailcompte', compact('employe'));
     }
     public function statusemploye($id)
-{
-    $employe= Employe::findOrFail($id); 
-if ($employe->status == 'Actif') {
-    $employe->status = 'Inactif';
-} elseif ($employe->status == 'Inactif') {
-    $employe->status = 'Actif';
-}
-    $employe->save();
-    return view('admin.detailcompte', compact('employe'));
-}
-public function restauremploye($id)
-{
-    $employe= Employe::withTrashed()->findOrFail($id);
-    $employe->restore();
-    return view('admin.detailcompte', compact('employe'));
-}
-public function modifemploye(EmployeRequest $request, $id)
-{
-    $employe = Employe::findOrFail($id);
+    {
+        $employe= Employe::findOrFail($id); 
 
-    $employe->Nom = $request->input('Nom');
-    $employe->Email = $request->input('Email');
-    $employe->numero_de_téléphone = $request->input('numero_de_téléphone');
-    $employe->Rôle = $request->input('Rôle');
-    $employe->password = $request->input('password');
+        // GoF: Strategy — délègue la logique de changement de statut au MenuService
+        $this->menuService->toggleStatus($employe);
 
-    $employe->save();
-    return view('admin.detailcompte', compact('employe'));
-}
+        return view('admin.detailcompte', compact('employe'));
+    }
+    public function restauremploye($id)
+    {
+        $employe= Employe::withTrashed()->findOrFail($id);
+        // GoF: Facade — délègue au MenuService
+        $this->menuService->restore($employe);
+        return view('admin.detailcompte', compact('employe'));
+    }
+    public function modifemploye(EmployeRequest $request, $id)
+    {
+        $employe = Employe::findOrFail($id);
+
+        $employe->Nom = $request->input('Nom');
+        $employe->Email = $request->input('Email');
+        $employe->numero_de_téléphone = $request->input('numero_de_téléphone');
+        $employe->Rôle = $request->input('Rôle');
+        $employe->password = $request->input('password');
+
+        $employe->save();
+        return view('admin.detailcompte', compact('employe'));
+    }
 
 }
