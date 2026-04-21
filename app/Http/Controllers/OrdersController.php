@@ -48,11 +48,10 @@ class OrdersController extends Controller
     }
    public function showCommandes()
    {
-       $commandes = Commands::all(); // Fetch commandes with their produits
-       foreach ($commandes as $commande) {
-           $commande->produits = json_decode($commande->produits, true) ?? []; // Ensure produits is an array
-       }
-       return view('admin.cuisiner', compact('commandes')); // Pass commandes to the view
+       // GRASP: Information Expert — Le modèle Commands gère lui-même
+       // la conversion JSON via $casts, plus besoin de json_decode ici
+       $commandes = Commands::all();
+       return view('admin.cuisiner', compact('commandes'));
    }
    
     public function index()

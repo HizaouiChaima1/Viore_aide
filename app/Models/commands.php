@@ -22,6 +22,18 @@ class commands extends Model
         'produits',
     ]; // Les champs que vous souhaitez pouvoir remplir via Mass Assignment
 
+    /**
+     * GRASP: Information Expert
+     * 
+     * Le modèle est l'expert de ses propres données.
+     * Le cast 'array' gère automatiquement la conversion JSON ↔ array,
+     * éliminant le besoin de json_decode() dans les contrôleurs.
+     */
+    protected $casts = [
+        'produits' => 'array',
+        'heure_arrivee' => 'datetime',
+    ];
+
     protected $primaryKey = 'id'; // Clé primaire
     public $incrementing = false; // Désactiver l'incrémentation automatique pour les identifiants aléatoires
 
