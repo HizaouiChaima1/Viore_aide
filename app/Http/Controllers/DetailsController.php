@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\Employe;
 use Illuminate\Http\Request;
+use App\Services\PhotoFactory;
  // Assurez-vous d'importer le modèle Employe
 
 class DetailsController extends Controller
@@ -30,13 +31,11 @@ class DetailsController extends Controller
             'pays' => $validatedData['pays'],
         ]);
 
-        if ($request->hasFile('photo')) {
-            $fileName = time() . '_' . $request->file('photo')->getClientOriginalName();
-            $path = $request->file('photo')->storeAs('images', $fileName, 'public');
-            $photoPath = '/storage/' . $path;
+        $photoPath = PhotoFactory::create($request, 'photo', 'images');
+        if ($photoPath) {
             $admin->photo = $photoPath;
-            $admin->save();
         }
+        $admin->save();
 
         return redirect('/details')->with('success', 'Les détails de l\'employé admin ont été mis à jour avec succès.');
     }
