@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use App\Contracts\StatusStrategyInterface;
 use App\Services\Strategies\ActiveInactiveStrategy;
+use App\Contracts\NotificationServiceInterface;
+use App\Services\EmailNotificationService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind(StatusStrategyInterface::class, ActiveInactiveStrategy::class);
+        $this->app->bind(NotificationServiceInterface::class, EmailNotificationService::class);
     }
 
     /**
