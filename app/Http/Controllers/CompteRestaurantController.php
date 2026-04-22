@@ -53,21 +53,7 @@ class CompteRestaurantController extends Controller
 
     public function storep(CategoriepRequest $request)
     {
-        $validatedData = $request->validate([
-            'Nom' => 'required|string',
-            'photo' => 'image|mimes:jpeg,png,jpg,gif,svg',
-            'Référence' => 'required|string|max:255',
-        ]);
-    
-        // GoF: Factory Method — centralise la logique d'upload de photo
-        $photoPath = PhotoFactory::create($request);
-
-        $categorie = new Categoriep();
-        $categorie->Nom = $validatedData['Nom'];
-        $categorie->Référence = $validatedData['Référence'];
-        $categorie->photo = $photoPath;
-        $categorie->save();
-    
+        $this->menuService->createEntity(Categoriep::class, $request->validated(), $request);
         return redirect('/nouveaucategoriep');
     }
     
@@ -86,33 +72,8 @@ class CompteRestaurantController extends Controller
 
     public function store(CategorieRequest $request)
     {
-        // Validation des données de la requête
-        $request->validate([
-            'Nom' => 'required|string', 
-            'photo' => 'image|mimes:jpeg,png,jpg,gif,svg',
-            'Référence' => 'required|string|max:255', 
-            'Categoriep' => 'required|string',
-        ]); 
-    
-        // Récupération du nom de la catégorie parente depuis la requête
-        $categorieNom = $request->input('Categoriep');
-    
-        // Recherche de la catégorie parente par son nom
-        $categorieP = Categoriep::where('Nom', $categorieNom)->first();
-    
-        // GoF: Factory Method — centralise la logique d'upload de photo
-        $photoPath = PhotoFactory::create($request);
-
-        // Création de la nouvelle catégorie avec la catégorie parente
-        $categorie = new Categorie();
-        $categorie->Nom = $request->input('Nom');
-        $categorie->Référence = $request->input('Référence');
-        $categorie->photo = $photoPath;
-        $categorie->categoriep_id = $categorieP->id;
-        $categorie->save();
-    
+        $this->menuService->createEntity(Categorie::class, $request->validated(), $request, 'Categoriep');
         return redirect('/nouveaucategorie')->with('success', 'Catégorie ajoutée avec succès');
-
     }
     
         
@@ -141,18 +102,8 @@ class CompteRestaurantController extends Controller
 
     public function ajout(ProduitRequest $request)
     {
-        $validatedData = $request->validated();
-   
-        $category = categorie::where('Nom', $validatedData['Categorie'])->firstOrFail();
-
-        // GoF: Factory Method — centralise la logique d'upload de photo
-        $validatedData['photo'] = PhotoFactory::create($request);
-
-        $produit = new Produit($validatedData);
-        $produit->categorie()->associate($category);
-        $produit->save();
+        $this->menuService->createEntity(Produit::class, $request->validated(), $request, 'Categorie');
         return redirect('/nouveauproduit')->with('flash_message', 'Produit ajouté avec succès');
-
     }
 
 
@@ -186,23 +137,9 @@ class CompteRestaurantController extends Controller
     }
     public function modifproduit(ProduitRequest $request, $id)
     {
-        $validatedData = $request->validated();
-        $produit = produit::findOrFail($id);
-        
-        // GoF: Factory Method — mise à jour photo via PhotoFactory
-        $newPhoto = PhotoFactory::update($request);
-        if ($newPhoto) {
-            $validatedData['photo'] = $newPhoto;
-        }
+        $produit = Produit::findOrFail($id);
+        $this->menuService->updateEntity($produit, $request->validated(), $request, 'Categorie');
 
-        $produit->update($validatedData);
-    
-        // Retrieve the category by its name and associate it with the product
-        if (isset($validatedData['Categorie'])) {
-            $category = Categorie::where('Nom', $validatedData['Categorie'])->firstOrFail();
-            $produit->categorie()->associate($category);
-        }
-        $produit->save();
         $categories = Categorie::all();
         return view('admin.menu.detailproduit', compact('produit','categories'));
     }
@@ -250,24 +187,7 @@ class CompteRestaurantController extends Controller
 
     public function ajoutcombos(CombosRequest $request)
     {
-               
-        $categorieName = $request['categorie'];
-         $category = Categorie::where('Nom', $categorieName)->firstOrFail();
-         $categorieId = $category->id; 
-         $request['categorie_id'] = $categorieId;
-
-         // GoF: Factory Method — centralise la logique d'upload de photo
-         $photoPath = PhotoFactory::create($request);
-
-        Combos::create([
-            'nom' =>$request->input('nom'), 
-            'photo' => $photoPath,
-            'sku' => $request->input('sku'), 
-            'categorie_id' =>$request->input('categorie_id'), 
-            'code_barre' =>$request->input('code_barre','___'), 
-            'description' => $request->input('description','___'), 
-        ]);
-    
+        $this->menuService->createEntity(Combos::class, $request->validated(), $request, 'categorie');
         return redirect('/nouvelcombos');
     } 
 
@@ -284,22 +204,9 @@ class CompteRestaurantController extends Controller
     }
     public function modifcombos(CombosRequest $request, $id)
     { 
-        $validatedData = $request->validated();
         $Combos = combos::findOrFail($id);
-        $Combos->update([
-            'nom' => $request->input('nom'),
-            'sku' => $request->input('sku'),
-            'code_barre'=>$request->input('code_barre'),
-            'description' =>$request->input('description'),
-            'Categorie' =>$request->input('categories'),           
-        ]);
-    
-        // GoF: Factory Method — mise à jour photo via PhotoFactory
-        $newPhoto = PhotoFactory::update($request);
-        if ($newPhoto) {
-            $Combos->photo = $newPhoto;
-            $Combos->update();
-        }
+        $this->menuService->updateEntity($Combos, $request->validated(), $request, 'categories');
+
         $categories = Categorie::all();
         return view('admin.menu.detailcombos', compact('Combos','categories'));
     }
@@ -347,16 +254,7 @@ class CompteRestaurantController extends Controller
 
     public function ajoutcarte(CartefideliteRequest $request)
     {
-        $validatedData = $request->validated();
-        $category = Categorie::where('Nom', $validatedData['Catégorie'])->firstOrFail(); 
-
-        // GoF: Factory Method — centralise la logique d'upload de photo
-        $validatedData['photo'] = PhotoFactory::create($request);
-
-        $Cartefidelites = new cartefidelite($validatedData);
-        $Cartefidelites->category()->associate($category);
-        $Cartefidelites->save();
-
+        $this->menuService->createEntity(Cartefidelite::class, $request->validated(), $request, 'Catégorie');
         return  redirect('/nouvelcarte');
     }
     public function affichcarte()
@@ -411,22 +309,9 @@ class CompteRestaurantController extends Controller
 
     public function modifcarte (CartefideliteRequest $request, $id)
     {
-        $validatedData = $request->validated();
         $carte = Cartefidelite::findOrFail($id);
+        $this->menuService->updateEntity($carte, $request->validated(), $request, 'Catégorie');
 
-        // GoF: Factory Method — mise à jour photo via PhotoFactory
-        $newPhoto = PhotoFactory::update($request);
-        if ($newPhoto) {
-            $validatedData['photo'] = $newPhoto;
-        }
-        $carte->update($validatedData);
-
-        // Retrieve the category by its name and associate it with the product
-        if (isset($validatedData['Catégorie'])) {
-            $category = Categorie::where('Nom', $validatedData['Catégorie'])->firstOrFail();
-            $carte->category()->associate($category);
-        }
-        $carte->save();
         $categories = Categorie::all();
         return view('admin.menu.detailcarte', compact('carte','categories'));
     }
@@ -479,16 +364,9 @@ class CompteRestaurantController extends Controller
     // OPTIONS MODIFICATEURS
     // =============================================
 
-    public function   ajoutoption(optionmodifRequest $request)
+    public function ajoutoption(optionmodifRequest $request)
     {
-        $validatedData = $request->validated();
-
-        $modifid = modif::where('Nom', $validatedData['modificateur'])->firstOrFail();
-
-        $optionmodif = new optionmodif($validatedData);
-        $optionmodif->modify()->associate($modifid);
-        $optionmodif->save();
-            
+        $this->menuService->createEntity(Optionmodif::class, $request->validated(), $request, 'modificateur');
         return redirect()->route('optionmodif.affich');
     }
     public function afficheoption (){

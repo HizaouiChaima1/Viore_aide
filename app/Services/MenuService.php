@@ -40,9 +40,11 @@ class MenuService
         // Gestion de la photo via PhotoFactory
         $data['photo'] = PhotoFactory::create($request);
 
-        // Résolution de la catégorie si nécessaire
+        // Résolution de la catégorie parente si nécessaire
         if ($categoryFieldName && isset($data[$categoryFieldName])) {
-            $category = Categorie::where('Nom', $data[$categoryFieldName])->firstOrFail();
+            // Si on crée une Categorie, le parent est une Categoriep
+            $parentClass = ($modelClass === \App\Models\Categorie::class) ? \App\Models\Categoriep::class : \App\Models\Categorie::class;
+            $category = $parentClass::where('Nom', $data[$categoryFieldName])->firstOrFail();
             $data['categorie_id'] = $category->id;
         }
 
@@ -90,12 +92,30 @@ class MenuService
      * @param Request $request La requête HTTP
      * @return Model L'entité mise à jour
      */
-    public function updateEntity(Model $entity, array $data, Request $request): Model
+    public function updateEntity(Model $entity, array $data, Request $request, ?string $categoryFieldName = null): Model
     {
         // Mise à jour de la photo si un nouveau fichier est fourni
         $newPhoto = PhotoFactory::update($request);
         if ($newPhoto) {
             $data['photo'] = $newPhoto;
+        }
+
+        // Résolution de la catégorie si nécessaire
+        if ($categoryFieldName && isset($data[$categoryFieldName])) {
+            $parentClass = \App\Models\Categorie::class; // Par défaut
+            if ($entity instanceof \App\Models\Categorie) {
+                $parentClass = \App\Models\Categoriep::class;
+            } elseif ($entity instanceof \App\Models\Optionmodif) {
+                $parentClass = \App\Models\Modif::class;
+            }
+            
+            $category = $parentClass::where('Nom', $data[$categoryFieldName])->firstOrFail();
+            
+            // On utilise la méthode de relation dynamique si possible
+            $relationName = ($entity instanceof \App\Models\Optionmodif) ? 'modify' : (($entity instanceof \App\Models\Cartefidelite) ? 'category' : 'categorie');
+            if (method_exists($entity, $relationName)) {
+                $entity->$relationName()->associate($category);
+            }
         }
 
         $entity->update($data);
