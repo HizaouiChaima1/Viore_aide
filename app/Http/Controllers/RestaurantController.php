@@ -1,17 +1,16 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Builders\RestaurantBuilder;
 use App\Models\Restaurant;
+use App\Services\RestaurantRegistrationFacade;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
-use App\Http\Requests\RestaurantRequest;
-use Illuminate\Support\Str;
-
-use Illuminate\Support\Facades\DB;
 
 class RestaurantController extends Controller
 {
+    public function __construct(private RestaurantRegistrationFacade $restaurantRegistrationFacade)
+    {
+    }
+
      
     public function create()
     {
@@ -41,21 +40,7 @@ class RestaurantController extends Controller
             return redirect()->route('restaurant.create')->withInput();
         }
     
-        $restaurant = RestaurantBuilder::make()
-            ->withCustomerName($validatedData['customerName'])
-            ->withRestaurantName($validatedData['nomrestau'])
-            ->withContact($validatedData['customerContact'])
-            ->withEmail($validatedData['customerEmail'])
-            ->withAddress($validatedData['customerAddress1'])
-            ->withCountry($validatedData['pays'])
-            ->withStatus($validatedData['status'] ?? null)
-            ->create();
-        
-        // Envoie de la notification à chaque utilisateur
-       $users = \App\Models\User::all(); // Récupère tous les utilisateurs
-        foreach ($users as $user) {
-            $user->notify(new \App\Notifications\Allcustomers($restaurant));
-        }
+        $restaurant = $this->restaurantRegistrationFacade->register($validatedData);
         // Si vous souhaitez afficher un message de succès, vous pouvez le stocker dans la session ici
         session()->flash('success', 'Restaurant enregistré avec succès.');
         
@@ -103,15 +88,7 @@ public function add(Request $request)
         return redirect()->route('restaurant.create')->withInput();
     }
 
-    $restaurant = RestaurantBuilder::make()
-        ->withCustomerName($validatedData['customerName'])
-        ->withRestaurantName($validatedData['nomrestau'])
-        ->withContact($validatedData['customerContact'])
-        ->withEmail($validatedData['customerEmail'])
-        ->withAddress($validatedData['customerAddress1'])
-        ->withCountry($validatedData['pays'])
-        ->withStatus($validatedData['status'] ?? null)
-        ->create();
+    $restaurant = $this->restaurantRegistrationFacade->registerWithoutNotification($validatedData);
     
     
     // Si vous souhaitez afficher un message de succès, vous pouvez le stocker dans la session ici
