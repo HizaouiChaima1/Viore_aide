@@ -7,6 +7,8 @@ use App\Models\Categorie;
 use Illuminate\Http\Request;
 use App\Models\Produit;
 use Illuminate\Support\Str;
+use App\Composite\CategoriepComposite;
+use App\Models\Categoriep;
 
 /**
  * Patron Proxy — Client
@@ -72,5 +74,30 @@ class MenuController extends Controller
         return redirect()
             ->route('produit.show', $clone->id)
             ->with('success', 'Produit dupliqué avec succès. Pensez à modifier le nom et le SKU.');
+    }
+
+    /**
+     * COMPOSITE — Client
+     * Traite toute l'arborescence du menu de façon uniforme,
+     * sans distinguer feuilles et nœuds.
+     */
+    public function resumeMenu(string $categoriep_id)
+    {
+        // Charger la catégorie principale avec ses enfants
+        $categoriep = Categoriep::with('categories.produits')
+            ->findOrFail($categoriep_id);
+
+        // Construire l'arbre Composite
+        $menuTree = new CategoriepComposite($categoriep);
+
+        // Appels identiques peu importe le niveau de l'arbre
+        $stats = [
+            'nom'       => $menuTree->getNom(),
+            'nbProduits' => $menuTree->getNombreProduits(),
+            'prixTotal' => $menuTree->getPrixTotal(),
+            'arbre'     => $menuTree->afficher(),
+        ];
+
+        return view('admin.menu-resume', compact('stats'));
     }
 }
