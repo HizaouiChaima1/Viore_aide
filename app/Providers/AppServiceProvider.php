@@ -8,6 +8,8 @@ use App\Contracts\StatusStrategyInterface;
 use App\Services\Strategies\ActiveInactiveStrategy;
 use App\Contracts\NotificationServiceInterface;
 use App\Services\EmailNotificationService;
+use App\Models\commands;
+use App\Observers\CommandsObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,5 +38,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Schema::defaultStringLength(191);
+        commands::observe(CommandsObserver::class);
     }
 }
