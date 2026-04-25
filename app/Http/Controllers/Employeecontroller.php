@@ -65,40 +65,23 @@ class EmployeeController extends Controller
     public function index()
     {
         $currentUser = Auth::guard('employee')->user();
-        $Employe = Employe::where('nomrestau', $currentUser->nomrestau)
-                          ->where(function($query) use ($currentUser) {
-                              $query->where('Rôle', '!=', 'admin')
-                                    ->orWhere('id', $currentUser->id);
-                          })
-                          ->get();
+        
+        // GRASP: Information Expert - Le filtrage complexe est géré par le modèle
+        $Employe = Employe::visibleTo($currentUser)->get();
+        
         return view('admin.role', compact('Employe'));
     }
 
-    public function affichemploye (){
+    public function affichemploye()
+    {
         $currentUser = Auth::guard('employee')->user();
-        $nomrestau = $currentUser->nomrestau;
-        $Employes= Employe::withTrashed()
-                          ->where('nomrestau', $nomrestau)
-                          ->where(function($query) use ($currentUser) {
-                              $query->where('Rôle', '!=', 'admin')
-                                    ->orWhere('id', $currentUser->id);
-                          })
-                          ->get();
-        $deletedemp= Employe::onlyTrashed()
-                            ->where('nomrestau', $nomrestau)
-                            ->where(function($query) use ($currentUser) {
-                                $query->where('Rôle', '!=', 'admin')
-                                      ->orWhere('id', $currentUser->id);
-                            })
-                            ->get();
-        $tousemp = Employe::whereNull('deleted_at')
-                          ->where('nomrestau', $nomrestau)
-                          ->where(function($query) use ($currentUser) {
-                              $query->where('Rôle', '!=', 'admin')
-                                    ->orWhere('id', $currentUser->id);
-                          })
-                          ->get();
-        return view ('admin.ajout', compact('Employes','deletedemp','tousemp'));  
+
+        // GRASP: Information Expert - Suppression d'une énorme duplication de code (DRY)
+        $Employes = Employe::withTrashed()->visibleTo($currentUser)->get();
+        $deletedemp = Employe::onlyTrashed()->visibleTo($currentUser)->get();
+        $tousemp = Employe::whereNull('deleted_at')->visibleTo($currentUser)->get();
+        
+        return view('admin.ajout', compact('Employes', 'deletedemp', 'tousemp'));  
     }
 
 

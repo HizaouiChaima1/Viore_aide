@@ -15,19 +15,6 @@ class OrdersController extends Controller
     public function closeOrder($orderId) {
         return redirect()->back()->with('success', 'La commande a été fermée avec succès.');
     } 
-    public function markAsRead($id)
-    {
-        $notification = Auth::guard('employee')->user()->notifications()->find($id);
-        if ($notification) {
-            $notification->markAsRead();
-        }
-        return redirect()->back();
-    }
-    public function markAllAsRead()
-    {
-        Auth::guard('employee')->user()->unreadNotifications->markAsRead();     
-        return redirect()->back();
-    }
     public function store(CommandsRequest $request)
     {      
     if (empty($request->total_price) || is_null($request->total_price)) {
@@ -72,36 +59,6 @@ public function updateStatus(Request $request)
     $commande->save();
 
     return redirect()->back()->with('success', 'Status updated successfully');
-}
-
-public function indexx(): View
-{
-    $orders = commands::all();
-
-    $totalOrders = $orders->count();
-
-    // Calculate the number of orders each day
-    $orderCountsByDay = DB::table('commands')
-        ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
-        ->groupBy('date')
-        ->get()
-        ->keyBy('date');
-
-    // Calculate the number of orders each month
-    $orderCountsByMonth = DB::table('commands')
-        ->select(DB::raw('YEAR(created_at) as year'), DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as count'))
-        ->groupBy('year', 'month')
-        ->get()
-        ->map(function ($item) {
-            return [
-                'year' => $item->year,
-                'month' => $item->month,
-                'count' => $item->count,
-                'label' => date('F', mktime(0, 0, 0, $item->month, 1)),
-            ];
-        });
-
-    return view('admin.tabledebord', compact('orders', 'totalOrders', 'orderCountsByDay','orderCountsByMonth'));
 }
 
 }

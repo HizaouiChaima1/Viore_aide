@@ -8,6 +8,7 @@ use App\Http\Controllers\EmaillController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\CaisseController;
+use App\Http\Controllers\DashboardController;
 
 
 use App\Http\Controllers\RestaurantController;
@@ -20,7 +21,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 Route::post('/marquer_notification_lue/{id}', [NotificationControllers::class, 'markAsRead'])->name('notifications.markAsRead');
 
-Route::get('/dash', [OrdersController::class, 'indexx'])->name('dash');
+Route::get('/dash', [DashboardController::class, 'index'])->name('dash');
 
 Route::post('/caisse', [CaisseController::class, 'add'])->name('caisse.add');
 Route::post('/caisse1', [CaisseController::class, 'save'])->name('caisse.save');
@@ -104,8 +105,8 @@ Route::middleware('auth')->group(function () {
 });
 Route::get('/home', [AuthenticatedSessionController::class, 'showRestaurants'])->name('home');
 
-Route::post('/notifications/markAsRead/{id}', [OrdersController::class, 'markAsRead'])->name('notifications.markAsRead');
-Route::post('/notifications/markAllAsRead', [OrdersController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+Route::post('/notifications/markAsRead/{id}', [NotificationControllers::class, 'markAsRead'])->name('notifications.markAsRead');
+Route::post('/notifications/markAllAsRead', [NotificationControllers::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 Route::post('/close-order/{orderId}', [OrdersController::class, 'closeOrder'])->name('close.order');
 
 Route::get('SlimsDigital/Partenariat', [RestaurantController::class, 'create'])->name('restaurant.create');
@@ -129,8 +130,8 @@ require __DIR__ . '/auth.php';
 Route::post('/mark-all-notifications-as-read', [NotificationControllers::class, 'markAllNotificationsAsRead'])->name('notifications.markAllAsRead');
 Route::get('/cuisine', [OrdersController::class, 'showCommandes'])->name('admin.cuisine');
 Route::post('/update-order-status', [OrdersController::class, 'updateStatus'])->name('update.order.status');
-Route::post('/notifications/markAsRead/{id}', [OrdersController::class, 'markAsRead'])->name('notifications.markAsRead');
-Route::post('/notifications/markAllAsRead', [OrdersController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+Route::post('/notifications/markAsRead/{id}', [NotificationControllers::class, 'markAsRead'])->name('notifications.markAsRead');
+Route::post('/notifications/markAllAsRead', [NotificationControllers::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 Route::post('/close-order/{orderId}', [OrdersController::class, 'closeOrder'])->name('close.order');
 
 
