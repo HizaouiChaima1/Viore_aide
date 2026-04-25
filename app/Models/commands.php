@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+
 class commands extends Model
 {
     use HasFactory;
@@ -46,7 +47,7 @@ class commands extends Model
             $model->id = Str::random(7); // Générer un ID aléatoire avant la sauvegarde
         });
     }
-    public function produits()
+    public function produitsList()
     {
         return $this->belongsToMany(Produit::class);
     }

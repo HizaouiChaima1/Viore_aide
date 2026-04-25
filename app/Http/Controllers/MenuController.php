@@ -36,10 +36,10 @@ class MenuController extends Controller
 
     public function showSubcategories($categoriep_id)
     {
-        // ✅ Proxy : retourne le cache — pas de nouvelle requête SQL
         $Categoriep = $this->produitRepo->getCategories();
-        $categorie  = Categorie::findOrFail($categoriep_id)->categoriep;
-        $sousCategories = $categorie ? $categorie->categories : collect();
+
+        $categoriep   = Categoriep::findOrFail($categoriep_id);
+        $sousCategories = $categoriep->categories; // relation hasMany vers Categorie
 
         return view('admin.menucat', compact('Categoriep', 'sousCategories'));
     }
