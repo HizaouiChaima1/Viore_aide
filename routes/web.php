@@ -262,3 +262,5 @@ Route::put('/reductions/restore/{id}', [CompteRestaurantController::class, 'rest
 Route::post('/article/modif/{article}', [CompteRestaurantController::class, 'ajoutFourniArticle'])->name('ajoutfourniarticle');
 Route::post('/produit/{id}/dupliquer', [MenuController::class, 'dupliquerProduit'])
     ->name('produit.dupliquer');
+Route::post('/combos/{id}/dupliquer', [MenuController::class, 'dupliquerCombo'])->name('combo.dupliquer');
+

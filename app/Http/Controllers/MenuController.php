@@ -9,6 +9,7 @@ use App\Models\Produit;
 use Illuminate\Support\Str;
 use App\Composite\CategoriepComposite;
 use App\Models\Categoriep;
+use App\Models\Combos;
 
 /**
  * Patron Proxy — Client
@@ -75,6 +76,21 @@ class MenuController extends Controller
             ->route('produit.show', $clone->id)
             ->with('success', 'Produit dupliqué avec succès. Pensez à modifier le nom et le SKU.');
     }
+
+    public function dupliquerCombo(string $id)
+{
+    // 1. Récupérer le combo original (ConcretePrototype)
+    $comboExistant = Combos::findOrFail($id);
+
+    // 2. Cloner via le patron Prototype
+    $nouveauCombo = $comboExistant->cloneObject();
+
+    // 3. Modifier uniquement ce qui change
+    $nouveauCombo->nom = $comboExistant->nom . ' (copie)';
+    $nouveauCombo->save();
+
+    return redirect()->back()->with('success', 'Combo dupliqué avec succès.');
+}
 
     /**
      * COMPOSITE — Client

@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use App\Models\Categorie;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Contracts\Cloneable;
 
-class Combos extends Model
+class Combos extends Model implements Cloneable
 {
     use HasFactory;
     use SoftDeletes;
@@ -34,6 +35,14 @@ class Combos extends Model
                 $Combos->category->increment('Combinaisons');
             }
         });
+    }
+
+public function cloneObject(): static
+    {
+        $clone = $this->replicate(); // copie tous les champs sauf l'ID
+        $clone->nom = $this->nom . ' (copie)';
+        $clone->save();
+        return $clone;
     }
 
    
