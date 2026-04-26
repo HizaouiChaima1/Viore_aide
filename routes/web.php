@@ -263,4 +263,6 @@ Route::post('/article/modif/{article}', [CompteRestaurantController::class, 'ajo
 Route::post('/produit/{id}/dupliquer', [MenuController::class, 'dupliquerProduit'])
     ->name('produit.dupliquer');
 Route::post('/combos/{id}/dupliquer', [MenuController::class, 'dupliquerCombo'])->name('combo.dupliquer');
-
+Route::post('/produit/prix-avec-options', 
+    [CartController::class, 'calculerPrixAvecOptions'])
+    ->name('produit.prixOptions');

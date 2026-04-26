@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Commands;
+use App\Models\produit;        // ← ajouter
+use App\Models\Optionmodif;    // ← ajouter
+use App\Decorators\ProduitBase;          // ← ajouter
+use App\Decorators\OptionModifDecorator;
 
 /**
  * Patron Template Method — Classe concrète pour le panier client (serveur)
@@ -68,4 +72,26 @@ class CartController extends AbstractPanierController
     {
         return $this->ajouterProduit($request);
     }
+
+    public function calculerPrixAvecOptions(Request $request)
+    {
+        $produitId = $request->input('produit_id');
+        $optionIds = $request->input('options', []); // tableau d'IDs d'options
+
+        // 1. ConcreteComponent — produit de base
+        $produit = new ProduitBase(produit::findOrFail($produitId));
+
+        // 2. Décorer dynamiquement avec chaque option choisie
+        foreach ($optionIds as $optionId) {
+            $option  = Optionmodif::findOrFail($optionId);
+            $produit = new OptionModifDecorator($produit, $option);
+        }
+
+        // 3. Résultat final — prix et description enrichis
+        return response()->json([
+            'prix'        => $produit->getPrix(),
+            'description' => $produit->getDescription(),
+        ]);
+    }
+    
 }
