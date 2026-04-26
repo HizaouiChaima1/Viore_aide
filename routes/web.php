@@ -266,3 +266,11 @@ Route::post('/combos/{id}/dupliquer', [MenuController::class, 'dupliquerCombo'])
 Route::post('/produit/prix-avec-options', 
     [CartController::class, 'calculerPrixAvecOptions'])
     ->name('produit.prixOptions');
+
+Route::post('/rapport/caisse',
+    [CaisseController::class, 'rapportCaisse'])
+    ->name('rapport.caisse');
+
+Route::post('/rapport/commandes',
+    [CaisseController::class, 'rapportCommandes'])
+    ->name('rapport.commandes');

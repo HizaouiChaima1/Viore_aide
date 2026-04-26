@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Commands;
+use App\Reports\CaisseReport;      // ← ajouter
+use App\Reports\CommandesReport;
 
 /**
  * Patron Template Method — Classe concrète pour la caisse
@@ -73,5 +75,25 @@ class CaisseController extends AbstractPanierController
     public function add(Request $request)
     {
         return $this->ajouterProduit($request);
+    }
+
+    public function rapportCaisse(Request $request)
+    {
+        $restaurantId = $request->input('restaurant_id');
+
+        $report  = new CaisseReport();
+        $data    = $report->generer($restaurantId);
+
+        return response()->json($data);
+    }
+
+    public function rapportCommandes(Request $request)
+    {
+        $restaurantId = $request->input('restaurant_id');
+
+        $report = new CommandesReport();
+        $data   = $report->generer($restaurantId);
+
+        return response()->json($data);
     }
 }
