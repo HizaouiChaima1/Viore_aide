@@ -30,8 +30,8 @@ class AppServiceProvider extends ServiceProvider
         // SOLID: Contextual Binding
         // On définit quelle stratégie utiliser selon le contrôleur
         $this->app->when(\App\Http\Controllers\EmaillController::class)
-                  ->needs(StatusStrategyInterface::class)
-                  ->give(\App\Services\Strategies\VerbalStatusStrategy::class);
+            ->needs(StatusStrategyInterface::class)
+            ->give(\App\Services\Strategies\VerbalStatusStrategy::class);
 
         // Singleton Pattern: AuthManager
         // Une seule instance par requête HTTP — centralize rôles et permissions

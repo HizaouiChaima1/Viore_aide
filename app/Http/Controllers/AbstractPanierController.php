@@ -127,6 +127,25 @@ abstract class AbstractPanierController extends Controller
 
         // Étape 4 — construire et persister la commande (spécifique à chaque sous-classe)
         $command = $this->construireCommande($data, $produits);
+        
+        // ═══════════════════════════════════════════════════════
+        // Patron GRASP : Polymorphisme (Calcul des frais)
+        // ═══════════════════════════════════════════════════════
+        $sousTotal = collect($produits)->sum('total');
+        $typeCommande = $data['type_commande'] ?? 'sur_place'; // Valeur par défaut
+        
+        // Instanciation polymorphique selon le type
+        $calculateur = match($typeCommande) {
+            'livraison' => new \App\Services\Frais\CommandeLivraisonFrais(),
+            'emporter'  => new \App\Services\Frais\CommandeEmporterFrais(),
+            default     => new \App\Services\Frais\CommandeSurPlaceFrais(),
+        };
+        
+        // Appel polymorphique
+        $frais = $calculateur->calculerFrais($sousTotal);
+        $command->total_price = $sousTotal + $frais;
+        // ═══════════════════════════════════════════════════════
+
         $command->produits = json_encode($produits);
         $command->source   = $this->getSource();
         $command->save();
