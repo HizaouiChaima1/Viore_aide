@@ -2,69 +2,96 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-class Restaurant extends Model implements MustVerifyEmail
+class Restaurant extends Model
 {
-    use HasFactory, Notifiable;
+    use HasFactory;
 
     protected $table = 'restaurants';
-    protected $fillable = ['customerName', 'nomrestau', 'pays', 'customerAddress1', 'customerContact', 'customerEmail','status'];
     protected $primaryKey = 'id';
-    public $incrementing = false; // Disable auto-incrementing for random IDs
+    public $incrementing = false;
+
+    protected $fillable = [
+        'customerName',
+        'nomrestau',
+        'pays',
+        'customerAddress1',
+        'customerContact',
+        'customerEmail',
+        'status',
+    ];
+
+    /**
+     * Valeurs de statut gérées par VerbalStatusStrategy.
+     * Correspond à la contrainte OCL :
+     *   inv statutValide:
+     *     Set{'activer','inactiver'}->includes(self.status)
+     */
+    private const STATUTS_AUTORISES = ['activer', 'inactiver'];
 
     protected static function boot()
     {
         parent::boot();
 
+        // ── Comportement original : génération ID aléatoire ───────────────
         static::creating(function ($model) {
-            $model->id = Str::random(7); // Generate random ID before saving
+            $model->id = Str::random(7);
         });
-    }
 
-    /**
-     * Get the email address that should be used for verification.
-     *
-     * @return string
-     */
-    public function getEmailForVerification()
-    {
-        return $this->email;
-    }
+        // ══════════════════════════════════════════════════════════════════
+        // OCL — Invariants vérifiés avant toute création ET modification
+        // ══════════════════════════════════════════════════════════════════
+        $invariants = function ($model) {
 
-    /**
-     * Determine if the user has verified their email address.
-     *
-     * @return bool
-     */
-    public function hasVerifiedEmail()
-    {
-        return $this->email_verified_at !== null;
-    }
+            // pre activationComplete :
+            //   self.nomrestau <> null
+            //   and self.customerEmail <> null
+            //   and self.customerContact <> null
+            if (
+                empty($model->nomrestau)
+                || empty($model->customerEmail)
+                || empty($model->customerContact)
+            ) {
+                throw new \InvalidArgumentException(
+                    '[OCL pre activationComplete] nomrestau, customerEmail '
+                    . 'et customerContact sont obligatoires.'
+                );
+            }
 
-    /**
-     * Mark the given user's email as verified.
-     *
-     * @return void
-     */
-    public function markEmailAsVerified()
-    {
-        $this->forceFill([
-            'email_verified_at' => now(),
-        ])->save();
-    }
+            // inv statutValide :
+            //   Set{'activer','inactiver'}->includes(self.status)
+            if (
+                $model->status !== null
+                && !in_array($model->status, self::STATUTS_AUTORISES, true)
+            ) {
+                throw new \InvalidArgumentException(
+                    '[OCL inv statutValide] Statut invalide : '
+                    . $model->status
+                    . '. Valeurs autorisées : '
+                    . implode(', ', self::STATUTS_AUTORISES)
+                );
+            }
 
-    /**
-     * Send the email verification notification.
-     *
-     * @return void
-     */
-    public function sendEmailVerificationNotification()
-    {
-        $this->notify(new \Illuminate\Auth\Notifications\VerifyEmail);
+            // inv emailUnique :
+            //   Restaurant.allInstances()
+            //     ->select(r | r <> self)
+            //     ->forAll(r | r.customerEmail <> self.customerEmail)
+            $doublon = self::where('customerEmail', $model->customerEmail)
+                ->where('id', '!=', $model->id)
+                ->exists();
+
+            if ($doublon) {
+                throw new \InvalidArgumentException(
+                    '[OCL inv emailUnique] Cet email est déjà associé '
+                    . 'à un restaurant existant.'
+                );
+            }
+        };
+
+        static::creating($invariants);
+        static::updating($invariants);
     }
 }

@@ -24,6 +24,10 @@ Route::post('/marquer_notification_lue/{id}', [NotificationControllers::class, '
 Route::get('/dash', [DashboardController::class, 'index'])->name('dash');
 
 Route::post('/caisse', [CaisseController::class, 'add'])->name('caisse.add');
+// Redirection de courtoisie si on rafraîchit la caisse (GET)
+Route::get('/caisse1', function () {
+    return redirect()->route('admin.caisse'); 
+});
 Route::post('/caisse1', [CaisseController::class, 'save'])->name('caisse.save');
 
 Route::get('/ordres', [OrdersController::class, 'index'])->name('admin.index');
@@ -77,6 +81,10 @@ Route::get('/nouveaucategorie', [CompteRestaurantController::class, 'index'])->n
 Route::post('/nouveauproduit', [CompteRestaurantController::class, 'ajout'])->name('produit.ajout');
 Route::get('/nouveauproduit', [CompteRestaurantController::class, 'indexx'])->name('produit.index');
 Route::post('/ordre', [OrdersController::class, 'store'])->name('admin.store');
+// Redirection de courtoisie si l'utilisateur accède à /role en GET par erreur
+Route::get('/role', function () {
+    return redirect()->route('employe.affich');
+});
 Route::post('/role', [EmployeeController::class, 'store'])->name('employe.store');
 Route::get('/employe', [EmployeeController::class, 'index'])->name('employe.index');
 
