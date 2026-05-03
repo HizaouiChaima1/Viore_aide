@@ -14,44 +14,49 @@ use App\Observers\CommandsObserver;
 use App\Repositories\ProduitRepositoryInterface;
 use App\Repositories\ProduitRepository;
 use App\Repositories\ProduitRepositoryProxy;
+use App\Services\Factories\ImageUploaderFactory;
+use App\Services\Factories\ProductImageFactory;
+use App\Services\Factories\ProfileImageFactory;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
     public function register()
     {
+        // Strategy Pattern
         $this->app->bind(StatusStrategyInterface::class, ActiveInactiveStrategy::class);
         $this->app->bind(NotificationServiceInterface::class, EmailNotificationService::class);
 
-        // SOLID: Contextual Binding
-        // On définit quelle stratégie utiliser selon le contrôleur
+        // Strategy — Contextual Binding selon le contrôleur
         $this->app->when(\App\Http\Controllers\EmaillController::class)
             ->needs(StatusStrategyInterface::class)
             ->give(\App\Services\Strategies\VerbalStatusStrategy::class);
 
+        // GoF Factory Method — Contextual Binding
+        // MenuService et CompteRestaurantController → ProductImageFactory (dossier uploads/)
+        $this->app->when(\App\Services\MenuService::class)
+            ->needs(ImageUploaderFactory::class)
+            ->give(ProductImageFactory::class);
+
+        $this->app->when(\App\Http\Controllers\CompteRestaurantController::class)
+            ->needs(ImageUploaderFactory::class)
+            ->give(ProductImageFactory::class);
+
+        // DetailsController → ProfileImageFactory (dossier images/)
+        $this->app->when(\App\Http\Controllers\DetailsController::class)
+            ->needs(ImageUploaderFactory::class)
+            ->give(ProfileImageFactory::class);
+
         // Singleton Pattern: AuthManager
-        // Une seule instance par requête HTTP — centralize rôles et permissions
         $this->app->singleton(AuthManager::class, function ($app) {
             return new AuthManager();
         });
 
         // Proxy Pattern: ProduitRepositoryProxy
-        // Le contrôleur reçoit le Proxy à la place du vrai repository.
-        // Le Proxy mémorise les résultats pour éviter les requêtes SQL répétées.
         $this->app->bind(ProduitRepositoryInterface::class, function ($app) {
             return new ProduitRepositoryProxy(new ProduitRepository());
         });
     }
 
-    /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
     public function boot()
     {
         Schema::defaultStringLength(191);

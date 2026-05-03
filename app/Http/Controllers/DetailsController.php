@@ -1,13 +1,25 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Employe;
+use App\Services\Factories\ImageUploaderFactory;
 use Illuminate\Http\Request;
-use App\Services\PhotoFactory;
- // Assurez-vous d'importer le modèle Employe
 
 class DetailsController extends Controller
 {
+    private ImageUploaderFactory $imageFactory;
+
+    /**
+     * GoF Factory Method — Client
+     * Reçoit ProfileImageFactory via injection (AppServiceProvider).
+     * Le contrôleur ne connaît pas le ConcreteCreator utilisé.
+     */
+    public function __construct(ImageUploaderFactory $imageFactory)
+    {
+        $this->imageFactory = $imageFactory;
+    }
+
     public function update(Request $request, $id)
     {
         $validatedData = $request->validate([
@@ -21,7 +33,6 @@ class DetailsController extends Controller
         ]);
 
         $admin = Employe::findOrFail($id);
-
         $admin->update([
             'Nom' => $validatedData['Nom'],
             'Email' => $validatedData['Email'],
@@ -31,29 +42,25 @@ class DetailsController extends Controller
             'pays' => $validatedData['pays'],
         ]);
 
-        $photoPath = PhotoFactory::create($request, 'photo', 'images');
+        // Factory Method — appel polymorphique via le Creator injecté
+        $photoPath = $this->imageFactory->upload($request);
         if ($photoPath) {
             $admin->photo = $photoPath;
         }
         $admin->save();
 
-        return redirect('/details')->with('success', 'Les détails de l\'employé admin ont été mis à jour avec succès.');
+        return redirect('/details')->with('success', 'Profil mis à jour avec succès.');
     }
-    public function index()
-{
-    // Récupérer les détails de l'employé ayant le rôle "admin"
-    $details = Employe::where('Rôle', 'admin')->first();
-    
-    // Passer les détails à la vue
-    return view('admin.profil', compact('details'));             
-}
-public function indexx()
-{
-    // Récupérer les détails de l'employé ayant le rôle "admin"
-    $details = Employe::where('Rôle', 'admin')->first();
-    
-    // Passer les détails à la vue
-    return view('admin.nav', compact('details'));             
-}
 
+    public function index()
+    {
+        $details = Employe::where('Rôle', 'admin')->first();
+        return view('admin.profil', compact('details'));
+    }
+
+    public function indexx()
+    {
+        $details = Employe::where('Rôle', 'admin')->first();
+        return view('admin.nav', compact('details'));
+    }
 }
