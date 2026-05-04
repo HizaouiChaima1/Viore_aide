@@ -3,9 +3,8 @@
 namespace App\Services;
 
 use App\Builders\RestaurantBuilder;
+use App\Jobs\NotifyAllUsers;
 use App\Models\Restaurant;
-use App\Models\User;
-use App\Notifications\Allcustomers;
 
 /**
  * GoF Structural Pattern: Facade
@@ -47,10 +46,6 @@ class RestaurantRegistrationFacade
 
     private function notifyAllUsers(Restaurant $restaurant): void
     {
-        $users = User::all();
-
-        foreach ($users as $user) {
-            $user->notify(new Allcustomers($restaurant));
-        }
+        NotifyAllUsers::dispatch($restaurant)->onQueue('notifications');
     }
 }
