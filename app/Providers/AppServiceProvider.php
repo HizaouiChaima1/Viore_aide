@@ -11,6 +11,8 @@ use App\Services\EmailNotificationService;
 use App\Services\AuthManager;
 use App\Models\commands;
 use App\Observers\CommandsObserver;
+use App\Contracts\PanierOrderValidatorInterface;
+use App\Handlers\PanierOrderValidatorChain;
 use App\Repositories\ProduitRepositoryInterface;
 use App\Repositories\ProduitRepository;
 use App\Repositories\ProduitRepositoryProxy;
@@ -55,6 +57,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProduitRepositoryInterface::class, function ($app) {
             return new ProduitRepositoryProxy(new ProduitRepository());
         });
+
+        // DIP — validation panier : le contrôle dépend du contrat, pas des handlers.
+        $this->app->bind(PanierOrderValidatorInterface::class, PanierOrderValidatorChain::class);
     }
 
     public function boot()

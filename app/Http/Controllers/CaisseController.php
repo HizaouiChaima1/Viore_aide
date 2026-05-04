@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\PanierOrderValidatorInterface;
 use Illuminate\Http\Request;
 use App\Models\Commands;
 use App\Reports\CaisseReport;      // ← ajouter
@@ -16,6 +17,11 @@ use App\Reports\CommandesReport;
  */
 class CaisseController extends AbstractPanierController
 {
+    public function __construct(PanierOrderValidatorInterface $panierOrderValidator)
+    {
+        parent::__construct($panierOrderValidator);
+    }
+
     /**
      * Clé de session du panier caisse.
      */

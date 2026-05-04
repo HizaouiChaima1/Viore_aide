@@ -7,9 +7,7 @@ use App\Models\Produit;
 use App\Models\Commands;
 use App\Models\Employe;
 use App\Notifications\OrderCreated;
-use App\Handlers\PanierNonVideHandler;
-use App\Handlers\PrixValideHandler;
-use App\Handlers\ProduitsDisponiblesHandler;
+use App\Contracts\PanierOrderValidatorInterface;
 
 /**
  * Patron Template Method — Classe abstraite
@@ -25,6 +23,11 @@ use App\Handlers\ProduitsDisponiblesHandler;
  */
 abstract class AbstractPanierController extends Controller
 {
+    public function __construct(
+        protected PanierOrderValidatorInterface $panierOrderValidator
+    ) {
+    }
+
     //  MÉTHODES ABSTRAITES — à implémenter dans chaque sous-classe
 
     /**
@@ -92,17 +95,11 @@ abstract class AbstractPanierController extends Controller
     public function save(Request $request)
     {
         // ═══════════════════════════════════════════════════════
-        // Patron Chain of Responsibility — Pipeline de validation
-        // Chaque handler valide une règle métier avant de passer
-        // au suivant. Si un handler échoue, la commande est rejetée.
+        // Patron Chain of Responsibility — Pipeline de validation (injecté, DIP)
         // ═══════════════════════════════════════════════════════
         $panier = session()->get($this->getSessionKey(), []);
 
-        $handler1 = new PanierNonVideHandler();
-        $handler1->setNext(new PrixValideHandler())
-                 ->setNext(new ProduitsDisponiblesHandler());
-
-        $erreur = $handler1->handle($request, $panier);
+        $erreur = $this->panierOrderValidator->validate($request, $panier);
 
         if ($erreur !== null) {
             // Un handler a bloqué la chaîne — on retourne l'erreur
