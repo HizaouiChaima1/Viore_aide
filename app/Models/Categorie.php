@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Cartefidelite;
+
 
 class Categorie extends Model
 {
@@ -21,7 +23,7 @@ class Categorie extends Model
     {
         return $this->hasMany(Produit::class, 'categorie_id');
     }
-    
+
 
     // Définir la relation avec la catégorie parente
     public function categoriesp()
@@ -31,12 +33,17 @@ class Categorie extends Model
 
     public function cartefidelite()
     {
-        return $this->hasMany(Carefidelite::class, 'Cartes_cadeau');
+        return $this->hasMany(Cartefidelite::class, 'Cartes_cadeau');
     }
-    
+
     public function Combos()
     {
         return $this->hasMany(Combos::class, 'Combos');
+    }
+
+    public function categories()
+    {
+        return $this->hasMany(Categorie::class, 'categoriep_id');
     }
 
 
@@ -44,10 +51,9 @@ class Categorie extends Model
     protected static function booted()
     {
         static::deleting(function ($categorie) {
-            Produit::where('categorie_id', $categorie->id) ->update(['deleted_at' => now(), 'updated_at' => now()]);
-           cartefidelite::where('categorie_id', $categorie->id) ->update(['deleted_at' => now(), 'updated_at' => now()]);
-            Combos::where('categorie_id', $categorie->id) ->update(['deleted_at' => now(), 'updated_at' => now()]);
-        
+            Produit::where('categorie_id', $categorie->id)->update(['deleted_at' => now(), 'updated_at' => now()]);
+            cartefidelite::where('categorie_id', $categorie->id)->update(['deleted_at' => now(), 'updated_at' => now()]);
+            Combos::where('categorie_id', $categorie->id)->update(['deleted_at' => now(), 'updated_at' => now()]);
         });
     }
 }

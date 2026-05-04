@@ -1,26 +1,30 @@
 <?php
 // Middleware personnalisé : AdminMiddleware.php
 namespace App\Http\Middleware;
-use App\Models\Employe;
+
+use App\Services\AuthManager;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class AdminMiddleware
 {
+    private AuthManager $authManager;
+
+    // Injection via constructeur — Laravel résout l'instance Singleton automatiquement
+    public function __construct(AuthManager $authManager)
+    {
+        $this->authManager = $authManager;
+    }
+
     public function handle(Request $request, Closure $next)
     {
-        // Vérifier si l'employé est authentifié
-        $employe = Employe::find(Auth::guard('employe')->id());
-        if ($employe) {
-            // Vérifier si l'employé a le rôle d'administrateur
-            if ($employe->Rôle === 'admin') {
-                
-            return redirect()->route('admin.index');// Laisser la requête continuer
-            }
+        // Singleton Pattern: une seule instance d'AuthManager est utilisée
+        if ($this->authManager->check() && $this->authManager->isAdmin()) {
+            return $next($request); // Laisser la requête continuer
         }
-        
-        // Rediriger vers la page de connexion si l'employé n'est pas authentifié ou n'a pas le rôle d'administrateur
-        return redirect()->route('admin.index');
+
+        // Rediriger vers login si non authentifié ou pas admin
+        return redirect()->route('logine.create')
+            ->with('error', 'Accès réservé aux administrateurs.');
     }
 }

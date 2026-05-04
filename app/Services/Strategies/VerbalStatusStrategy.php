@@ -28,4 +28,12 @@ class VerbalStatusStrategy implements StatusStrategyInterface
         
         $entity->save();
     }
+
+    /**
+     * @return string
+     */
+    public function getStatusField(): string
+    {
+        return 'status';
+    }
 }

@@ -1,51 +1,88 @@
 <?php
 
 namespace App\Models;
+
+use App\Contracts\Cloneable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
-class Produit extends Model
-{use HasFactory;
-    use SoftDeletes;
+class Produit extends Model implements Cloneable
+{
+    use HasFactory, SoftDeletes;
 
     protected $table = 'produits';
-    protected $fillable = ['Nom','photo','Produit_en_stock', 'SKU', 'Prix', 'Groupe_impot','Méthode_vente', 'status', 'categorie_id','code_à_barre','temp_preperation','calories','description'];
-
-    // Utilisation de la clé primaire par défaut
+    public $incrementing = false;
     protected $primaryKey = 'id';
 
-    // Activation/désactivation de l'incrémentation automatique
-    public $incrementing = false;
+    protected $fillable = [
+        'Nom',
+        'photo',
+        'Produit_en_stock',
+        'SKU',
+        'Prix',
+        'Groupe_impot',
+        'Méthode_vente',
+        'status',
+        'categorie_id',
+        'code_à_barre',
+        'temp_preperation',
+        'calories',
+        'description'
+    ];
 
-    // Relation avec la catégorie
+    /**
+     * PROTOTYPE — crée une copie indépendante de ce produit.
+     * Le clone est un nouvel objet non persisté, prêt à être
+     * modifié puis sauvegardé séparément.
+     */
+    public function cloner(): static
+    {
+        $clone = $this->replicate(); // copie tous les attributs
+
+        // Nouveau id UUID unique
+        $clone->id = (string) Str::uuid();
+
+        // Nouveau SKU unique basé sur l'original
+        $clone->SKU = $this->SKU . '-COPY-' . strtoupper(Str::random(4));
+
+        // Nom explicite pour distinguer le clone
+        $clone->Nom = 'Copie de ' . $this->Nom;
+
+        // Le clone est inactif par défaut — l'admin doit le valider
+        $clone->status = 'Inactif';
+
+        // Réinitialiser les timestamps
+        $clone->created_at = null;
+        $clone->updated_at = null;
+
+        return $clone; // pas encore sauvegardé en base
+    }
+
+    // ── relations et méthodes existantes inchangées ──────────────────
+
     public function categorie()
     {
         return $this->belongsTo(Categorie::class, 'categorie_id')->withTrashed();
     }
 
-
     public static function findById($id)
     {
-        // Utilisez la méthode findOrFail pour rechercher le produit par son ID
         return self::findOrFail($id);
     }
+
     public function commands()
-{
-    return $this->belongsToMany(Commands::class);
-}
+    {
+        return $this->belongsToMany(Commands::class);
+    }
 
-
-protected static function booted()
-{
-    static::saved(function ($produit) {
-        // Check if a Categorie is associated with the Produit
-        if ($produit->categorie) {
-            // Increment the count in the corresponding Categorie record
-            $produit->categorie->increment('Produit');
-        }
-    });
-}
-
+    protected static function booted()
+    {
+        static::saved(function ($produit) {
+            if ($produit->categorie) {
+                $produit->categorie->increment('Produit');
+            }
+        });
+    }
 }

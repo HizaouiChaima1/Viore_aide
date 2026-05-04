@@ -1,191 +1,496 @@
+<x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<!doctype html>
+<html lang="fr" class="light-style layout-wide customizer-hide" dir="ltr" data-theme="theme-default">
 
-    <!doctype html>
-<html
-  lang="en"
-  class="light-style layout-wide customizer-hide"
-  dir="ltr"
-  data-theme="theme-default"
-  data-assets-path="{{ ('assets')}}"
-  data-template="vertical-menu-template">
-  <head>
+<head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Login</title>
-
-    <meta name="description" content="" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Connexion | Viore Digital</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{asset('assets/ecommerce.ico')}}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('slims.png') }}" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&ampdisplay=swap"
-      rel="stylesheet" />
+        href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet" />
 
     <!-- Icons -->
-    <link rel="stylesheet" href="{{asset('assets/vendor/fonts/fontawesome.css')}}" />
-    <link rel="stylesheet" href="{{asset('assets/vendor/fonts/tabler-icons.css')}}" />
-    <link rel="stylesheet" href="{{asset('assets/vendor/fonts/flag-icons.css')}}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/fontawesome.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/tabler-icons.css') }}" />
 
     <!-- Core CSS -->
-    <link rel="stylesheet" href="{{asset('assets/vendor/css/rtl/core.css')}}" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="{{asset('assets/vendor/css/rtl/theme-default.css')}}" class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="{{asset('assets/css/demo.css')}}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/rtl/core.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/rtl/theme-default.css') }}" />
 
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" href="{{asset('assets/vendor/libs/node-waves/node-waves.css')}}" />
-    <link rel="stylesheet" href="{{asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css')}}" />
-    <link rel="stylesheet" href="{{asset('assets/vendor/libs/typeahead-js/typeahead.css')}}" />
-    <!-- Vendor -->
-    <link rel="stylesheet" href="{{asset('assets/vendor/libs/@form-validation/form-validation.css')}}" />
-
-    <!-- Page CSS -->
-    <!-- Page -->
-    <link rel="stylesheet" href="{{asset('assets/vendor/css/pages/page-auth.css')}}" />
     <style>
-      /* Styles pour le champ de saisie de texte */
-      /* Styles pour le champ de saisie de texte */
-      input {      
-        border: 1px solid #ced4da;
-        border-radius: 0.375rem;
-        padding: 0.5rem 0.75rem;
-        font-size: 1rem;
-        line-height: 1.5;
-        width: 100%; /* Définit la largeur à 100% */
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    }
-    
-    input:focus {
-        border-color: #AF2B1D;
-        outline: 0;
-        box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
-    }
+        :root {
+            --primary-brand: #E31E24;
+            --primary-light: #ffebec;
+            --dark-brand: #1a1a1a;
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --transition-smooth: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
 
-    label {
-        display: block;
-      
-    }
-  </style>
-  </head>
+        body {
+            font-family: 'Public Sans', sans-serif;
+            margin: 0;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
 
-  <body>
-    <!-- Content -->
+        /* Fixed Background Container to prevent overflow */
+        .bg-fixed-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
 
-    <div class="container-xxl">
-      <div class="authentication-wrapper authentication-basic container-p-y">
-        <div class="authentication-inner py-4">
-          <!-- Login -->
-          <div class="card">
-            <div class="card-body">
-              <div class="app-brand justify-content-center mb-4 mt-2">
-                <a href="https://vioredigital.com/" class="app-brand-link gap-2">
-                    <span class="app-brand-logo demo" style="width: 95px; height: 85px">
-                        <img src="slims.png" width="75" height="65" alt="Your Logo">
-                    </span>
+        /* Creative Mesh Gradient Background */
+        .mesh-bg {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            background-color: #fff;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(227, 30, 36, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(26, 26, 26, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(227, 30, 36, 0.08) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(26, 26, 26, 0.06) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(227, 30, 36, 0.04) 0px, transparent 50%);
+            filter: blur(60px);
+            animation: mesh-float 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes mesh-float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(2%, 2%) scale(1.05);
+            }
+        }
+
+        h1,
+        h2,
+        h3,
+        .app-brand-text {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .auth-wrapper {
+            width: 100%;
+            max-width: 440px;
+            padding: 1rem;
+            z-index: 1;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.25rem 1.75rem;
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.1);
+            transition: var(--transition-smooth);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .logo-img {
+            height: 40px;
+            width: auto;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .welcome-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--dark-brand);
+            letter-spacing: -0.5px;
+            margin-bottom: 0.1rem;
+        }
+
+        .welcome-subtitle {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 0.7rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #475569;
+            margin-bottom: 0.4rem;
+            padding-left: 0.25rem;
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1.1rem;
+            color: #94a3b8;
+            font-size: 1rem;
+            transition: var(--transition-smooth);
+        }
+
+        .input-custom {
+            width: 100%;
+            padding: 0.6rem 1rem 0.6rem 2.6rem;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1.5px solid rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--dark-brand);
+            transition: var(--transition-smooth);
+        }
+
+        .input-custom::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .input-custom:focus {
+            outline: none;
+            background: #fff;
+            border-color: var(--primary-brand);
+            box-shadow: 0 10px 20px -5px rgba(227, 30, 36, 0.15);
+        }
+
+        .input-custom:focus+.input-icon {
+            color: var(--primary-brand);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1.25rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .password-toggle:hover {
+            color: var(--dark-brand);
+        }
+
+        .options-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .remember-check {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .remember-check input {
+            accent-color: var(--primary-brand);
+            width: 18px;
+            height: 18px;
+        }
+
+        .forgot-link {
+            color: var(--primary-brand);
+            text-decoration: none;
+            font-weight: 700;
+            transition: var(--transition-smooth);
+        }
+
+        .forgot-link:hover {
+            color: #b91c1c;
+            text-decoration: underline;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--dark-brand);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-brand);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(227, 30, 36, 0.25);
+        }
+
+        .btn-submit:active {
+            transform: translateY(-1px);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 0.8rem 0;
+            color: #94a3b8;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider::before {
+            margin-right: 1.5rem;
+        }
+
+        .divider::after {
+            margin-left: 1.5rem;
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .social-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.65rem;
+            border: 1.5px solid rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            background: #fff;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }
+
+        .social-button:hover {
+            border-color: #e2e8f0;
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 1.2rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .footer-text a {
+            color: var(--primary-brand);
+            text-decoration: none;
+            font-weight: 800;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* Floating shapes for extra creativity */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .shape-1 {
+            width: 300px;
+            height: 300px;
+            background: var(--primary-brand);
+            top: -100px;
+            right: -100px;
+            filter: blur(100px);
+        }
+
+        .shape-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--dark-brand);
+            bottom: -150px;
+            left: -150px;
+            filter: blur(120px);
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding: 1rem 0;
+            }
+
+            .auth-wrapper {
+                padding: 1rem;
+            }
+
+            .glass-card {
+                padding: 1.5rem;
+                border-radius: 24px;
+            }
+
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+
+            .shape {
+                display: none;
+            }
+
+            /* Hide floating shapes on mobile for cleaner look */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Elements -->
+    <div class="bg-fixed-container">
+        <div class="mesh-bg"></div>
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+
+    <div class="auth-wrapper">
+        <div class="glass-card">
+            <!-- Logo -->
+            <div class="logo-section">
+                <a href="https://vioredigital.com/">
+                    <img src="{{ asset('logo viore.png') }}" alt="Logo" class="logo-img">
                 </a>
             </div>
-              <h3 class="mb-1 pt-2" style="text-align: center !important;">Bienvenue👋</h3>
-             
 
-              <form  class="mb-3"  method="POST" action="{{ route('login') }}">
+            <div class="header-section">
+                <h2 class="welcome-title">Content de vous revoir</h2>
+                <p class="welcome-subtitle">Connectez-vous à votre espace digital</p>
+            </div>
+
+            <form method="POST" action="{{ route('login') }}">
                 @csrf
-               <div class="mb-3">
-            <x-input-label for="email" :value="__('Email :')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="email" />
-           
-           </div>
-           <div class="mb-3 form-password-toggle">
-    <x-input-label for="password" :value="__('Mot de passe :')" />
-    <div class="input-group"> <!-- Conteneur pour l'icône et le champ de mot de passe -->
-        <x-text-input id="password" class="block mt-1 w-full"
-                        type="password"
-                        name="password"
-                        required autocomplete="current-password" />
-    </div>
-    <span class="ml-2">
-        <a href="{{ route('password.request') }}">
-            <small>Mot de passe ?</small>
-        </a>
-    </span>
 
-    <x-input-error :messages="$errors->get('password')" class="mt-2" />
-</div>
-                <div class="mb-3">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                      <label class="form-check-label" for="remember">
-                       {{ __('Remember Me') }}
-                     </label>
-                  </div>
+                <div class="form-group">
+                    <label for="email" class="form-label">Adresse Email</label>
+                    <div class="input-container">
+                        <i class="ti ti-mail input-icon"></i>
+                        <input id="email" type="email" name="email" class="input-custom" placeholder="nom@exemple.com"
+                            value="{{ old('email') }}" required autofocus autocomplete="email">
+                    </div>
+                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
                 </div>
-                <div class="mb-3">
-                  <x-primary-button class="ml-3 btn btn-primary d-grid w-100">
-                {{ __('Log in') }}
-            </x-primary-button>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <div class="input-container">
+                        <i class="ti ti-lock input-icon"></i>
+                        <input id="password" type="password" name="password" class="input-custom" placeholder="••••••••"
+                            required autocomplete="current-password">
+                        <i class="ti ti-eye password-toggle toggle-password" data-target="#password"></i>
+                    </div>
+                    <x-input-error :messages="$errors->get('password')" class="mt-2" />
                 </div>
-              </form>
 
-              <p class="text-center">
-                <a href="{{ route('register') }}">
-                  <span>Creater un compte</span>
-                </a>
-              </p>
+                <div class="options-row">
+                    <label class="remember-check">
+                        <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                        Se souvenir de moi
+                    </label>
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" class="forgot-link">Oublié ?</a>
+                    @endif
+                </div>
 
-              <div class="divider my-4">
-                <div class="divider-text">or</div>
-              </div>
+                <button type="submit" class="btn-submit">
+                    Se connecter
+                </button>
+            </form>
 
-              <div class="d-flex justify-content-center">
-                <a href="https://www.facebook.com/viore.digital?locale=fr_FR" class="btn btn-icon btn-label-facebook me-3">
-                  <i class="tf-icons fa-brands fa-facebook-f fs-5"></i>
-                </a>
+            <div class="divider">ou continuer avec</div>
 
-                <a href="https://vioredigital.com/" class="btn btn-icon btn-label-google-plus me-3">
-                  <i class="tf-icons fa-brands fa-google fs-5"></i>
+            <div class="social-grid">
+                <a href="https://www.facebook.com/viore.digital" class="social-button">
+                    <i class="fa-brands fa-facebook-f text-primary"></i>
+                    Facebook
                 </a>
+                <a href="https://vioredigital.com/" class="social-button">
+                    <i class="fa-brands fa-google text-danger"></i>
+                    Google
                 </a>
-              </div>
             </div>
-          </div>
-          <!-- /Register -->
+
+            <p class="footer-text">
+                Nouveau ici ? <a href="{{ route('register') }}">Créer un compte</a>
+            </p>
         </div>
-      </div>
     </div>
 
-    <!-- / Content -->
+    <!-- Scripts -->
+    <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
+    <script>
+        $(document).ready(function () {
+            $('.toggle-password').on('click', function () {
+                const target = $($(this).data('target'));
+                const type = target.attr('type') === 'password' ? 'text' : 'password';
+                target.attr('type', type);
+                $(this).toggleClass('ti-eye ti-eye-off');
+            });
+        });
+    </script>
+</body>
 
-    <!-- Core JS -->
-
-    <script src="{{asset('assets/vendor/libs/jquery/jquery.js')}}"></script>
-    <script src="{{asset('assets/vendor/libs/popper/popper.js')}}"></script>
-    <script src="{{asset('assets/vendor/js/bootstrap.js')}}"></script>
-    <script src="{{asset('assets/vendor/libs/node-waves/node-waves.js')}}"></script>
-    <script src="{{asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js')}}"></script>
-    <script src="{{asset('assets/vendor/libs/hammer/hammer.js')}}"></script>
-    <script src="{{asset('assets/vendor/libs/i18n/i18n.js')}}"></script>
-    <script src="{{asset('assets/vendor/libs/typeahead-js/typeahead.js')}}"></script>
-    <script src="{{asset('assets/vendor/js/menu.js')}}"></script>
-  
-    
-
-    <!-- endbuild -->
-
-    <!-- Vendors JS -->
-    <script src="{{asset('assets/vendor/libs/@form-validation/popular.js')}}"></script>
-    <script src="{{asset('assets/vendor/libs/@form-validation/bootstrap5.js')}}"></script>
-    <script src="{{asset('assets/vendor/libs/@form-validation/auto-focus.js')}}"></script>
-
-
-
-    <!-- Page JS -->
-    <script src="{{asset('assets/js/pages-auth.js')}}"></script>
-  </body>
 </html>
-

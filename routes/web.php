@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\bornController;
 use App\Http\Controllers\CompteRestaurantController;
@@ -6,6 +7,9 @@ use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\EmaillController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\CaisseController;
+use App\Http\Controllers\DashboardController;
+
 
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\NotificationControllers;
@@ -17,15 +21,19 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 Route::post('/marquer_notification_lue/{id}', [NotificationControllers::class, 'markAsRead'])->name('notifications.markAsRead');
 
-Route::get('/dash', [OrdersController::class, 'indexx'])->name('dash');
+Route::get('/dash', [DashboardController::class, 'index'])->name('dash');
 
-Route::post('/caisse', [caisseController::class, 'add'])->name('caisse.add');
-Route::post('/caisse1', [caisseController::class, 'save'])->name('caisse.save');
+Route::post('/caisse', [CaisseController::class, 'add'])->name('caisse.add');
+// Redirection de courtoisie si on rafraîchit la caisse (GET)
+Route::get('/caisse1', function () {
+    return redirect()->route('admin.caisse'); 
+});
+Route::post('/caisse1', [CaisseController::class, 'save'])->name('caisse.save');
 
 Route::get('/ordres', [OrdersController::class, 'index'])->name('admin.index');
 Route::get('SlimsDigital/logine', [AdminController::class, 'create'])->name('logine.create');
 Route::get('/logine', function () {
-    return view('admin.loginadmin'); 
+    return view('admin.loginadmin');
 });
 Route::get('/ordre', [OrdersController::class, 'caisse'])->name('admin.caisse');
 Route::get('/cuisine', [OrdersController::class, 'cuisine'])->name('admin.cuisine');
@@ -73,6 +81,10 @@ Route::get('/nouveaucategorie', [CompteRestaurantController::class, 'index'])->n
 Route::post('/nouveauproduit', [CompteRestaurantController::class, 'ajout'])->name('produit.ajout');
 Route::get('/nouveauproduit', [CompteRestaurantController::class, 'indexx'])->name('produit.index');
 Route::post('/ordre', [OrdersController::class, 'store'])->name('admin.store');
+// Redirection de courtoisie si l'utilisateur accède à /role en GET par erreur
+Route::get('/role', function () {
+    return redirect()->route('employe.affich');
+});
 Route::post('/role', [EmployeeController::class, 'store'])->name('employe.store');
 Route::get('/employe', [EmployeeController::class, 'index'])->name('employe.index');
 
@@ -92,19 +104,17 @@ Route::get('/restaurant', function () {
 
 Route::get('/dashboard', function () {
     return view('auth.dashboard');
-    
-
 })->middleware(['auth', 'verified'])->name('dashboard');
 Route::middleware('auth')->group(function () {
-   
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 Route::get('/home', [AuthenticatedSessionController::class, 'showRestaurants'])->name('home');
 
-Route::post('/notifications/markAsRead/{id}', [OrdersController::class, 'markAsRead'])->name('notifications.markAsRead');
-Route::post('/notifications/markAllAsRead', [OrdersController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+Route::post('/notifications/markAsRead/{id}', [NotificationControllers::class, 'markAsRead'])->name('notifications.markAsRead');
+Route::post('/notifications/markAllAsRead', [NotificationControllers::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 Route::post('/close-order/{orderId}', [OrdersController::class, 'closeOrder'])->name('close.order');
 
 Route::get('SlimsDigital/Partenariat', [RestaurantController::class, 'create'])->name('restaurant.create');
@@ -128,8 +138,8 @@ require __DIR__ . '/auth.php';
 Route::post('/mark-all-notifications-as-read', [NotificationControllers::class, 'markAllNotificationsAsRead'])->name('notifications.markAllAsRead');
 Route::get('/cuisine', [OrdersController::class, 'showCommandes'])->name('admin.cuisine');
 Route::post('/update-order-status', [OrdersController::class, 'updateStatus'])->name('update.order.status');
-Route::post('/notifications/markAsRead/{id}', [OrdersController::class, 'markAsRead'])->name('notifications.markAsRead');
-Route::post('/notifications/markAllAsRead', [OrdersController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+Route::post('/notifications/markAsRead/{id}', [NotificationControllers::class, 'markAsRead'])->name('notifications.markAsRead');
+Route::post('/notifications/markAllAsRead', [NotificationControllers::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
 Route::post('/close-order/{orderId}', [OrdersController::class, 'closeOrder'])->name('close.order');
 
 
@@ -141,26 +151,26 @@ Route::post('/restaurantadd', [RestaurantController::class, 'add'])->name('resta
 
 
 Route::get('/employes/{employe}', [EmployeeController::class, 'detailemploye'])->name('employe.detail');
-Route::delete('/employe/delete/{id}', [EmployeeController::class,'supemploye'])->name('employe.sup');
+Route::delete('/employe/delete/{id}', [EmployeeController::class, 'supemploye'])->name('employe.sup');
 Route::put('/employe/status/{id}', [EmployeeController::class, 'statusemploye'])->name('employe.status');
-Route::put('/employe/restore/{id}', [EmployeeController::class,'restauremploye'])->name('employe.restauremploye');
+Route::put('/employe/restore/{id}', [EmployeeController::class, 'restauremploye'])->name('employe.restauremploye');
 Route::put('/employe/{employe}', [EmployeeController::class, 'modifemploye'])->name('employe.modif');
 
 
 Route::get('/produits/{produit}', [CompteRestaurantController::class, 'detailproduit'])->name('produit.detail');
 Route::put('/produit/modif/{id}', [CompteRestaurantController::class, 'modifproduit'])->name('produit.modif');
 Route::put('/produit/status/{id}', [CompteRestaurantController::class, 'updateStatus'])->name('produit.statut');
-Route::delete('/produit/delete/{id}', [CompteRestaurantController::class,'supproduit'])->name('produit.sup');
-Route::put('/produit/restore/{id}', [CompteRestaurantController::class,'restaureproduit'])->name('produit.restaureproduit');
+Route::delete('/produit/delete/{id}', [CompteRestaurantController::class, 'supproduit'])->name('produit.sup');
+Route::put('/produit/restore/{id}', [CompteRestaurantController::class, 'restaureproduit'])->name('produit.restaureproduit');
 
 
 Route::get('/combos/{combos}', [CompteRestaurantController::class, 'detailcombos'])->name('combos.detail');
 Route::post('/combos', [CompteRestaurantController::class, 'ajoutcombos'])->name('combos.ajout');
-Route::get ('/nouvelcombos', [CompteRestaurantController::class, 'affichcombos'])->name('combos.affich');
+Route::get('/nouvelcombos', [CompteRestaurantController::class, 'affichcombos'])->name('combos.affich');
 Route::put('/combos/{combos}', [CompteRestaurantController::class, 'modifcombos'])->name('combos.modif');
-Route::delete('/combos/suprime/{id}', [CompteRestaurantController::class,'supcombos'])->name('combos.sup');
+Route::delete('/combos/suprime/{id}', [CompteRestaurantController::class, 'supcombos'])->name('combos.sup');
 Route::put('/combos/status/{id}', [CompteRestaurantController::class, 'Statuscombos'])->name('combos.statut');
-Route::put('/combos/restore/{id}', [CompteRestaurantController::class,'restaurecombos'])->name('combos.restaurecombos');
+Route::put('/combos/restore/{id}', [CompteRestaurantController::class, 'restaurecombos'])->name('combos.restaurecombos');
 
 
 
@@ -169,44 +179,44 @@ Route::put('/combos/restore/{id}', [CompteRestaurantController::class,'restaurec
 Route::post('/cartefidelite', [CompteRestaurantController::class, 'ajoutcarte'])->name('cartefidelite.ajout');
 Route::get('/nouvelcarte', [CompteRestaurantController::class, 'affichcarte'])->name('cartefidelite.affich');
 Route::get('/carte/{carte}', [CompteRestaurantController::class, 'detailcarte'])->name('carte.detail');
-Route::delete('/carte/delete/{id}', [CompteRestaurantController::class,'supcarte'])->name('carte.sup');
-Route::put('/carte/status/{id}',[CompteRestaurantController::class, 'Statuscarte'])->name('carte.status');
-Route::put('/carte/restore/{id}',[CompteRestaurantController::class,'restaurecarte'])->name('carte.restaurecarte');
+Route::delete('/carte/delete/{id}', [CompteRestaurantController::class, 'supcarte'])->name('carte.sup');
+Route::put('/carte/status/{id}', [CompteRestaurantController::class, 'Statuscarte'])->name('carte.status');
+Route::put('/carte/restore/{id}', [CompteRestaurantController::class, 'restaurecarte'])->name('carte.restaurecarte');
 Route::put('/carte/modif/{id}', [CompteRestaurantController::class, 'modifcarte'])->name('carte.modifier');
 
 
 
 
 
-Route::post ('/modif', [CompteRestaurantController::class,'ajoutmodif'])->name('modif.ajout');
-Route::get ('/nouvelmodif', [CompteRestaurantController::class,'affichemodif'])->name('modif.affich');
-Route::delete('/modif/{modif}', [CompteRestaurantController::class,'effacemodif'])->name('modif.efface');
-Route::put('/modif/restore/{modif}', [CompteRestaurantController::class,'restoremodif'])->name('modif.restore');
-Route::put('/modif/{modif}', [CompteRestaurantController::class,'modifmodif'])->name('modif.modif');
+Route::post('/modif', [CompteRestaurantController::class, 'ajoutmodif'])->name('modif.ajout');
+Route::get('/nouvelmodif', [CompteRestaurantController::class, 'affichemodif'])->name('modif.affich');
+Route::delete('/modif/{modif}', [CompteRestaurantController::class, 'effacemodif'])->name('modif.efface');
+Route::put('/modif/restore/{modif}', [CompteRestaurantController::class, 'restoremodif'])->name('modif.restore');
+Route::put('/modif/{modif}', [CompteRestaurantController::class, 'modifmodif'])->name('modif.modif');
 
 
 
 
-Route::post ('/optionmodif', [CompteRestaurantController::class,'ajoutoption'])->name('optionmodif.ajout');
-Route::get ('/nouveloption', [CompteRestaurantController::class,'afficheoption'])->name('optionmodif.affich');
-Route::get('/options/{option}', [CompteRestaurantController::class, 'detailoption'])->name('option.detail');  
+Route::post('/optionmodif', [CompteRestaurantController::class, 'ajoutoption'])->name('optionmodif.ajout');
+Route::get('/nouveloption', [CompteRestaurantController::class, 'afficheoption'])->name('optionmodif.affich');
+Route::get('/options/{option}', [CompteRestaurantController::class, 'detailoption'])->name('option.detail');
 Route::put('/option/modif/{id}', [CompteRestaurantController::class, 'modifoption'])->name('option.modif');
 Route::put('/option/status/{id}', [CompteRestaurantController::class, 'Statusoption'])->name('option.status');
-Route::delete('/option/delete/{id}', [CompteRestaurantController::class,'supoption'])->name('option.sup');
-Route::put('/option/restore/{id}', [CompteRestaurantController::class,'restaureoption'])->name('option.restaureoption');
+Route::delete('/option/delete/{id}', [CompteRestaurantController::class, 'supoption'])->name('option.sup');
+Route::put('/option/restore/{id}', [CompteRestaurantController::class, 'restaureoption'])->name('option.restaureoption');
 
 
 
 
 
-Route::delete('/categoriesp/{categoriep}', [CompteRestaurantController::class,'deletecp'])->name('categoriesp.delete');
-Route::put('/categoriesp/restore/{categoriep}', [CompteRestaurantController::class,'restorecp'])->name('categoriesp.restore');
-Route::put('/categoriesp/modifier/{categoriep}', [CompteRestaurantController::class,'modifiercp'])->name('categoriesp.modifier');
+Route::delete('/categoriesp/{categoriep}', [CompteRestaurantController::class, 'deletecp'])->name('categoriesp.delete');
+Route::put('/categoriesp/restore/{categoriep}', [CompteRestaurantController::class, 'restorecp'])->name('categoriesp.restore');
+Route::put('/categoriesp/modifier/{categoriep}', [CompteRestaurantController::class, 'modifiercp'])->name('categoriesp.modifier');
 
 
-Route::delete('/categories/{categorie}', [CompteRestaurantController::class,'delete'])->name('categories.delete');
-Route::put('/categories/restore/{categorie}', [CompteRestaurantController::class,'restore'])->name('categories.restore');
-Route::put('/categories/modifier/{categorie}', [CompteRestaurantController::class,'modifier'])->name('categories.modifier');
+Route::delete('/categories/{categorie}', [CompteRestaurantController::class, 'delete'])->name('categories.delete');
+Route::put('/categories/restore/{categorie}', [CompteRestaurantController::class, 'restore'])->name('categories.restore');
+Route::put('/categories/modifier/{categorie}', [CompteRestaurantController::class, 'modifier'])->name('categories.modifier');
 
 
 
@@ -217,8 +227,8 @@ Route::get('/detailarticle', [CompteRestaurantController::class, 'ajoutarticle']
 Route::get('/articleaffich', [CompteRestaurantController::class, 'afficharticle'])->name('article.back');
 Route::get('/articles/{article}', [CompteRestaurantController::class, 'detailarticle'])->name('article.detail');
 Route::put('/articles/modif/{id}', [CompteRestaurantController::class, 'modifarticle'])->name('article.modif');
-Route::delete('/articles/suprime/{id}', [CompteRestaurantController::class,'suparticle'])->name('article.sup');
-Route::put('/articles/restore/{id}', [CompteRestaurantController::class,'restaurearticle'])->name('article.restaurearticle');
+Route::delete('/articles/suprime/{id}', [CompteRestaurantController::class, 'suparticle'])->name('article.sup');
+Route::put('/articles/restore/{id}', [CompteRestaurantController::class, 'restaurearticle'])->name('article.restaurearticle');
 
 
 
@@ -226,20 +236,20 @@ Route::post('/fournisseur', [CompteRestaurantController::class, 'ajoutfournisseu
 Route::get('/nouvelfournisseur', [CompteRestaurantController::class, 'affichfournisseur'])->name('fournisseur.affich');
 Route::get('/fournisseurs/{fournisseur}', [CompteRestaurantController::class, 'show'])->name('fourni.detail');
 Route::put('/fournisseurs/modif/{id}', [CompteRestaurantController::class, 'modiffourni'])->name('fourni.modif');
-Route::delete('/fournisseurs/suprime/{id}', [CompteRestaurantController::class,'supfourni'])->name('fourni.sup');
-Route::put('/fournisseurs/restore/{id}', [CompteRestaurantController::class,'restaurefourni'])->name('fourni.restaurefourni');
+Route::delete('/fournisseurs/suprime/{id}', [CompteRestaurantController::class, 'supfourni'])->name('fourni.sup');
+Route::put('/fournisseurs/restore/{id}', [CompteRestaurantController::class, 'restaurefourni'])->name('fourni.restaurefourni');
 
 
 
 Route::post('/ordredachat', [CompteRestaurantController::class, 'ajoutordre'])->name('ordre.ajout');
-Route ::get ('/nouvelordre', [CompteRestaurantController::class, 'affichordre'])->name('ordre.affich');
+Route::get('/nouvelordre', [CompteRestaurantController::class, 'affichordre'])->name('ordre.affich');
 
 Route::get('/nouvelemploye', [EmployeeController::class, 'affichemploye'])->name('employe.affich');
 
 
 
-Route::post ('/branche', [CompteRestaurantController::class,'ajoutbranche'])->name('branche.ajout');
-Route::get ('/nouvelbranche', [CompteRestaurantController::class,'affichebranche'])->name('branche.affich');
+Route::post('/branche', [CompteRestaurantController::class, 'ajoutbranche'])->name('branche.ajout');
+Route::get('/nouvelbranche', [CompteRestaurantController::class, 'affichebranche'])->name('branche.affich');
 Route::get('/branche/{branche}', [CompteRestaurantController::class, 'detailbranche'])->name('branche.detail');
 Route::put('/branche/modif/{branche}', [CompteRestaurantController::class, 'modifbranche'])->name('branche.modif');
 
@@ -249,12 +259,26 @@ Route::post('/ajoutfourniarticle', [CompteRestaurantController::class, 'ajoutfou
 
 
 
-Route::post ('/reduction', [CompteRestaurantController::class,'ajoutreduction'])->name('reduction.ajout');
-Route::get ('/nouvelreduction', [CompteRestaurantController::class,'affichereduction'])->name('reduction.affich');
+Route::post('/reduction', [CompteRestaurantController::class, 'ajoutreduction'])->name('reduction.ajout');
+Route::get('/nouvelreduction', [CompteRestaurantController::class, 'affichereduction'])->name('reduction.affich');
 Route::get('/reductions/{reduction}', [CompteRestaurantController::class, 'detailreduction'])->name('reduction.detail');
 Route::put('/reductions/modif/{reduction}', [CompteRestaurantController::class, 'modifreduction'])->name('reduction.modif');
-Route::delete('/reductions/suprime/{id}', [CompteRestaurantController::class,'supreduction'])->name('reduction.sup');
-Route::put('/reductions/restore/{id}', [CompteRestaurantController::class,'restaurereduction'])->name('reduction.restaurereduction');
+Route::delete('/reductions/suprime/{id}', [CompteRestaurantController::class, 'supreduction'])->name('reduction.sup');
+Route::put('/reductions/restore/{id}', [CompteRestaurantController::class, 'restaurereduction'])->name('reduction.restaurereduction');
 
 
-Route::post('/article/modif/{article}', [CompteRestaurantController::class,'ajoutFourniArticle'])->name('ajoutfourniarticle');
+Route::post('/article/modif/{article}', [CompteRestaurantController::class, 'ajoutFourniArticle'])->name('ajoutfourniarticle');
+Route::post('/produit/{id}/dupliquer', [MenuController::class, 'dupliquerProduit'])
+    ->name('produit.dupliquer');
+Route::post('/combos/{id}/dupliquer', [MenuController::class, 'dupliquerCombo'])->name('combo.dupliquer');
+Route::post('/produit/prix-avec-options', 
+    [CartController::class, 'calculerPrixAvecOptions'])
+    ->name('produit.prixOptions');
+
+Route::post('/rapport/caisse',
+    [CaisseController::class, 'rapportCaisse'])
+    ->name('rapport.caisse');
+
+Route::post('/rapport/commandes',
+    [CaisseController::class, 'rapportCommandes'])
+    ->name('rapport.commandes');

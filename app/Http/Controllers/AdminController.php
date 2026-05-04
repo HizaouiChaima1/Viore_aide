@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employe;
+use App\Services\AuthManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -36,20 +37,24 @@ class AdminController extends Controller
         }
 
         Auth::guard('employee')->login($employe);
-
         $request->session()->regenerate();
 
-        if ($employe->Rôle === 'admin') {
-            $request->session()->put('Nom', $employe->Nom);
-            $request->session()->put('nomrestau', $employe->nomrestau);
-            $request->session()->put('Rôle', $employe->nomrestau);
-            $request->session()->put('pays', $employe->pays);
+        // Singleton Pattern: on récupère l'instance unique d'AuthManager
+        // injectée par le conteneur Laravel — pas de `new AuthManager()`
+        $auth = app(AuthManager::class);
+
+        $request->session()->put('Nom', $employe->Nom);
+        $request->session()->put('nomrestau', $employe->nomrestau);
+        $request->session()->put('pays', $employe->pays);
+
+        // Redirection centrâlisée via l'AuthManager
+        if ($auth->isAdmin()) {
             return redirect()->route('admin.index');
-        } elseif ($employe->Rôle === 'Caissier') {
+        } elseif ($auth->isCaissier()) {
             return redirect()->route('admin.caisse');
-        } elseif ($employe->Rôle === 'Cuisinier') {
+        } elseif ($auth->isCuisinier()) {
             return redirect()->route('admin.cuisine');
-        } elseif ($employe->Rôle === 'Serveur') {
+        } elseif ($auth->isServeur()) {
             return redirect()->route('menu.create');
         }
 

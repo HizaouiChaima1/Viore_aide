@@ -1,84 +1,99 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Produit;
 use App\Models\Commands;
-use App\Models\Employe;
-use App\Notifications\OrderCreated;
+use App\Reports\CaisseReport;      // ← ajouter
+use App\Reports\CommandesReport;
 
-class CaisseController extends Controller
+/**
+ * Patron Template Method — Classe concrète pour la caisse
+ *
+ * Rôle : ConcreteClass
+ * Hérite du squelette d'algorithme de AbstractPanierController
+ * et implémente uniquement les étapes spécifiques à l'interface caissier.
+ */
+class CaisseController extends AbstractPanierController
 {
+    /**
+     * Clé de session du panier caisse.
+     */
+    protected function getSessionKey(): string
+    {
+        return 'cass';
+    }
+
+    /**
+     * Source de la commande : initiée depuis l'interface caissier.
+     */
+    protected function getSource(): string
+    {
+        return 'caissier';
+    }
+
+    /**
+     * Validation spécifique au formulaire de la caisse.
+     * Champs supplémentaires : branch, type_commande, notes_ticket, notes_cuisine.
+     */
+    protected function validerDonnees(Request $request): array
+    {
+        return $request->validate([
+            'branch'         => 'required|string',
+            'type_commande'  => 'required|string',
+            'client'         => 'nullable|string',
+            'total_price'    => 'required|numeric',
+            'heure_arrivee'  => 'required|date',
+            'notes_ticket'   => 'nullable|string',
+            'notes_cuisine'  => 'nullable|string',
+            'produits'       => 'required|array',
+        ]);
+    }
+
+    /**
+     * Construction de la commande avec les champs propres à la caisse.
+     * Inclut branch, type_commande et les notes cuisine/ticket.
+     */
+    protected function construireCommande(array $data, array $produits): Commands
+    {
+        $command = new Commands();
+        $command->branch         = $data['branch'];
+        $command->type_commande  = $data['type_commande'];
+        $command->client         = $data['client'] ?? null;
+        $command->total_price    = $data['total_price'];
+        $command->heure_arrivee  = $data['heure_arrivee'];
+        $command->notes_ticket   = $data['notes_ticket'] ?? null;
+        $command->notes_cuisine  = $data['notes_cuisine'] ?? null;
+
+        return $command;
+    }
+
+    /**
+     * Point d'entrée pour ajouter un produit au panier caisse.
+     * Délégué à la méthode template de la classe abstraite.
+     */
     public function add(Request $request)
     {
-        $productId = $request->input('productId');
-        $product = Produit::find($productId);
-        if (!$product) {
-            return redirect()->back()->withError('Le produit n\'existe pas.');
-        }
-        $cass = session()->get('cass', []);
-        $clicks = session('clicks', []);
-        if (array_key_exists($productId, $clicks)) {
-            $clicks[$productId]++;
-        } else {
-            $clicks[$productId] = 1;
-        }
-        session(['clicks' => $clicks]);
-    
-        if (array_key_exists($productId, $cass)) {
-            $cass[$productId]['quantity']++;
-        } else {
-            $cass[$productId] = [
-                'product' => $product,
-                'quantity' => 1
-            ];
-        }
-        session(['cass' => $cass]);
-        return redirect()->back()->withSuccess('Le produit a été ajouté au panier.');
+        return $this->ajouterProduit($request);
     }
 
-    public function save(Request $request)
+    public function rapportCaisse(Request $request)
     {
-        $validatedData = $request->validate([
-            'branch' => 'required|string',
-            'type_commande' => 'required|string',
-            'client' => 'nullable|string',
-            'total_price' => 'required|numeric',
-            'heure_arrivee' => 'required|date',
-            'notes_ticket' => 'nullable|string',
-            'notes_cuisine' => 'nullable|string',
-            'produits' => 'required|array', // Ensure 'products' is an array
-        ]);
+        $restaurantId = $request->input('restaurant_id');
 
-        $command = new Commands();
-        $command->branch = $validatedData['branch'];
-        $command->type_commande = $validatedData['type_commande'];
-        $command->client = $validatedData['client'];
-        $command->source ='caissier';
-        $command->total_price = $validatedData['total_price'];
-        $command->heure_arrivee = $validatedData['heure_arrivee'];
-        $command->notes_ticket = $validatedData['notes_ticket'];
-        $command->notes_cuisine = $validatedData['notes_cuisine'];
-        $command->produits= json_encode($validatedData['produits']);
-        $command->save();
-    
-        $employees = Employe::all();
-        foreach ($employees as $employee) {
-            $employee->notify(new OrderCreated($command));
-        }
-    
-        $this->refreshCartSession();
-    
-        return redirect()->back()->with('success', 'La commande a été enregistrée avec succès.');
+        $report  = new CaisseReport();
+        $data    = $report->generer($restaurantId);
+
+        return response()->json($data);
     }
 
-    public function refreshCartSession()
+    public function rapportCommandes(Request $request)
     {
-        session()->forget('cass');
-        session()->forget('success');
-        session()->forget('clicks');
+        $restaurantId = $request->input('restaurant_id');
 
-        return redirect()->back()->with('msg', 'Session du panier rafraîchie avec succès.');
+        $report = new CommandesReport();
+        $data   = $report->generer($restaurantId);
+
+        return response()->json($data);
     }
-
 }
