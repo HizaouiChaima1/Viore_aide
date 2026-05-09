@@ -30,13 +30,13 @@ Route::get('/caisse1', function () {
 });
 Route::post('/caisse1', [CaisseController::class, 'save'])->name('caisse.save');
 
-Route::get('/ordres', [OrdersController::class, 'index'])->name('admin.index');
+Route::get('/ordres', [OrdersController::class, 'index'])->name('admin.index')->middleware('admin');
 Route::get('SlimsDigital/logine', [AdminController::class, 'create'])->name('logine.create');
 Route::get('/logine', function () {
     return view('admin.loginadmin');
 });
-Route::get('/ordre', [OrdersController::class, 'caisse'])->name('admin.caisse');
-Route::get('/cuisine', [OrdersController::class, 'cuisine'])->name('admin.cuisine');
+Route::get('/ordre', [OrdersController::class, 'caisse'])->name('admin.caisse')->middleware('admin');
+Route::get('/cuisine', [OrdersController::class, 'cuisine'])->name('admin.cuisine')->middleware('admin');
 
 Route::get('/edit', function () {
     return view('admin.editprofil');
