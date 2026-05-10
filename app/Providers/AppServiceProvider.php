@@ -19,6 +19,7 @@ use App\Repositories\ProduitRepositoryProxy;
 use App\Services\Factories\ImageUploaderFactory;
 use App\Services\Factories\ProductImageFactory;
 use App\Services\Factories\ProfileImageFactory;
+use App\Services\CommandeFormatter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -60,6 +61,8 @@ class AppServiceProvider extends ServiceProvider
 
         // DIP — validation panier : le contrôle dépend du contrat, pas des handlers.
         $this->app->bind(PanierOrderValidatorInterface::class, PanierOrderValidatorChain::class);
+        // Pure Fabrication — classe de service artificielle
+        $this->app->singleton(CommandeFormatter::class);
     }
 
     public function boot()
