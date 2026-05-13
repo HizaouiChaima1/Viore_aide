@@ -8,6 +8,7 @@ use App\Models\Commands;
 use App\Models\Employe;
 use App\Notifications\OrderCreated;
 use App\Contracts\PanierOrderValidatorInterface;
+use App\Services\OCL\OclTotalCoherentValidator;
 
 /**
  * Patron Template Method — Classe abstraite
@@ -24,7 +25,8 @@ use App\Contracts\PanierOrderValidatorInterface;
 abstract class AbstractPanierController extends Controller
 {
     public function __construct(
-        protected PanierOrderValidatorInterface $panierOrderValidator
+        protected PanierOrderValidatorInterface $panierOrderValidator,
+        protected OclTotalCoherentValidator $oclValidator = new OclTotalCoherentValidator()
     ) {
     }
 
@@ -145,6 +147,14 @@ abstract class AbstractPanierController extends Controller
 
         $command->produits = json_encode($produits);
         $command->source   = $this->getSource();
+
+        // ═══════════════════════════════════════════════════════
+        // OCL C6 — Postcondition : TotalAvecFraisCoherent
+        // Vérifie que total_price = Σ(prix × quantité) + frais
+        // avant toute persistance en base de données.
+        // ═══════════════════════════════════════════════════════
+        $this->oclValidator->verifierPostcondition($command, $produits);
+
         $command->save();
 
         // Étape 5 — notifier tous les employés
