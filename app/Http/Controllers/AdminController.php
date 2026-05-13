@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use App\Providers\RouteServiceProvider;
+use App\Strategies\ProduitStatusStrategy;
+use App\Strategies\CategorieStatusStrategy;
+use App\Strategies\EmployeStatusStrategy;
+use App\Models\Produit;
+use App\Models\Categorie;
+
 
 class AdminController extends Controller
 {
@@ -71,4 +77,19 @@ class AdminController extends Controller
 
         return redirect()->route('logine.create');
     }
+
+    public function toggleStatus(Request $request, string $type, int $id)
+    {
+    [$entity, $strategy] = match($type) {
+        'produit'   => [Produit::findOrFail($id),   new ProduitStatusStrategy()],
+        'categorie' => [Categorie::findOrFail($id),  new CategorieStatusStrategy()],
+        'employe'   => [Employe::findOrFail($id),    new EmployeStatusStrategy()],
+    };
+
+    $strategy->toggle($entity);
+
+    return redirect()->back()->with('success', 'Statut mis à jour.');
+    
+    }
+
 }
