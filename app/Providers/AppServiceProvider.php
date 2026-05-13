@@ -20,12 +20,14 @@ use App\Services\Factories\ImageUploaderFactory;
 use App\Services\Factories\ProductImageFactory;
 use App\Services\Factories\ProfileImageFactory;
 use App\Services\CommandeFormatter;
+use App\Services\OrderNotificationService;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register()
     {
         // Strategy Pattern
+        $this->app->singleton(OrderNotificationService::class);
         $this->app->bind(StatusStrategyInterface::class, ActiveInactiveStrategy::class);
         $this->app->bind(NotificationServiceInterface::class, EmailNotificationService::class);
 

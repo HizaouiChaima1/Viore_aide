@@ -8,6 +8,7 @@ use App\Models\Commands;
 use App\Models\Employe;
 use App\Notifications\OrderCreated;
 use App\Contracts\PanierOrderValidatorInterface;
+use App\Services\OrderNotificationService;
 
 /**
  * Patron Template Method — Classe abstraite
@@ -171,11 +172,11 @@ abstract class AbstractPanierController extends Controller
     /**
      * Envoie une notification OrderCreated à tous les employés.
      */
+    // APRÈS
     private function notifierEmployes(Commands $command): void
     {
-        foreach (Employe::all() as $employee) {
-            $employee->notify(new OrderCreated($command));
-        }
+        $notifier = app(OrderNotificationService::class);
+        $notifier->notifierTousLesEmployes($command);
     }
 
     /**
